@@ -1,13 +1,15 @@
 package com.victordev.ferreclickbackend.service;
 
+import com.victordev.ferreclickbackend.dto.api.ProductResponse;
 import com.victordev.ferreclickbackend.persistence.entity.Product;
-import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface IProductService {
+    ProductResponse createProduct(Product product, List<Long> categoryIds);
 
-    List<Product> getAllProducts();
-    Product getProductById(Long id);
-    Product addProduct(Product product);
+    List<ProductResponse> getAllProducts();
+
+    Optional<ProductResponse> getProductById(Long id);
 }
