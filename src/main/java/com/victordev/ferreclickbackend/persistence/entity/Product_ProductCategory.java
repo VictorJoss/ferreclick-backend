@@ -18,4 +18,12 @@ public class Product_ProductCategory {
     @ManyToOne
     @JoinColumn(name = "category_id")
     private ProductCategory category;
+
+    public Product_ProductCategory(Product product, ProductCategory category) {
+        this.product = product;
+        this.category = category;
+    }
+
+    public Product_ProductCategory() {
+    }
 }
