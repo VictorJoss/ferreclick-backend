@@ -44,4 +44,15 @@ public class ProductController {
         ProductResponse savedProduct = productService.createProduct(product, productBody.getCategoryIds());
         return ResponseEntity.ok(savedProduct);
     }
+
+    @PreAuthorize("permitAll()")
+    @GetMapping("/category/{categoryId}")
+    public ResponseEntity<List<ProductResponse>> getProductsByCategory(@PathVariable Long categoryId) {
+        try {
+            List<ProductResponse> products = productService.getProductsByCategory(categoryId);
+            return ResponseEntity.ok(products);
+        } catch (Exception e) {
+            return ResponseEntity.status(500).build();
+        }
+    }
 }
