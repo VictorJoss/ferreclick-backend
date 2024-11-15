@@ -58,4 +58,11 @@ public class ProductServiceImpl implements IProductService {
     public Optional<ProductResponse> getProductById(Long id) {
         return productRepository.findById(id).map(dtoConverter::getProduct);
     }
+
+    public List<ProductResponse> getProductsByCategory(Long categoryId) {
+        List<Product> products = productProductCategoryRepository.findProductsByCategoryId(categoryId);
+        return products.stream()
+                .map(dtoConverter::getProduct)
+                .collect(Collectors.toList());
+    }
 }

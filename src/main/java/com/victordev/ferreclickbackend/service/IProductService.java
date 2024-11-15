@@ -12,4 +12,5 @@ public interface IProductService {
     List<ProductResponse> getAllProducts();
 
     Optional<ProductResponse> getProductById(Long id);
+    List<ProductResponse> getProductsByCategory(Long categoryId);
 }
