@@ -3,7 +3,7 @@ package com.victordev.ferreclickbackend.web.controller;
 import com.victordev.ferreclickbackend.dto.api.RegistrationBody;
 import com.victordev.ferreclickbackend.dto.security.LoginRequest;
 import com.victordev.ferreclickbackend.dto.security.LoginResponse;
-import com.victordev.ferreclickbackend.exception.UserAlreadyExistsException;
+import com.victordev.ferreclickbackend.exceptions.user.UserAlreadyExistsException;
 import com.victordev.ferreclickbackend.service.IUserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;

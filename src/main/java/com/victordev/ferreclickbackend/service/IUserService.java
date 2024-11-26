@@ -3,7 +3,7 @@ package com.victordev.ferreclickbackend.service;
 import com.victordev.ferreclickbackend.dto.api.RegistrationBody;
 import com.victordev.ferreclickbackend.dto.security.LoginRequest;
 import com.victordev.ferreclickbackend.dto.security.LoginResponse;
-import com.victordev.ferreclickbackend.exception.UserAlreadyExistsException;
+import com.victordev.ferreclickbackend.exceptions.user.UserAlreadyExistsException;
 import com.victordev.ferreclickbackend.persistence.entity.User;
 
 public interface IUserService {
