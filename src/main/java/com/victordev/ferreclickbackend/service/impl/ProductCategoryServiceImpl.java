@@ -18,7 +18,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
-public class ProductCategoryImpl implements IProductCategoryService {
+public class ProductCategoryServiceImpl implements IProductCategoryService {
 
     @Autowired
     private ProductCategoryRepository categoryRepository;
