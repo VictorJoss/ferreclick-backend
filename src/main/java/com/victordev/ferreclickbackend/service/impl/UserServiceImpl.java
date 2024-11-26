@@ -3,11 +3,14 @@ package com.victordev.ferreclickbackend.service.impl;
 import com.victordev.ferreclickbackend.dto.api.RegistrationBody;
 import com.victordev.ferreclickbackend.dto.security.LoginRequest;
 import com.victordev.ferreclickbackend.dto.security.LoginResponse;
-import com.victordev.ferreclickbackend.exception.UserAlreadyExistsException;
+import com.victordev.ferreclickbackend.exceptions.user.UserAlreadyExistsException;
+import com.victordev.ferreclickbackend.persistence.entity.Cart;
 import com.victordev.ferreclickbackend.persistence.entity.Role;
 import com.victordev.ferreclickbackend.persistence.entity.User;
+import com.victordev.ferreclickbackend.persistence.repository.CartRepository;
 import com.victordev.ferreclickbackend.persistence.repository.RoleRepository;
 import com.victordev.ferreclickbackend.persistence.repository.UserRepository;
+import com.victordev.ferreclickbackend.service.ICartService;
 import com.victordev.ferreclickbackend.service.IUserService;
 import com.victordev.ferreclickbackend.service.JwtService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +35,8 @@ public class UserServiceImpl implements IUserService {
     @Autowired
     private UserRepository userRepository;
     @Autowired
+    private CartRepository cartRepository;
+    @Autowired
     private RoleRepository roleRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
@@ -43,6 +48,8 @@ public class UserServiceImpl implements IUserService {
     private AuthenticationManager authenticationManager;
     @Autowired
     private JwtService jwtService;
+    @Autowired
+    private ICartService cartService;
 
 
     @Override
@@ -69,20 +76,34 @@ public class UserServiceImpl implements IUserService {
         user.setAccountLocked(false);
         user.setCredentialsExpired(false);
 
-        return userRepository.save(user);
+        User userSaved = userRepository.save(user);
+        Cart cart = cartService.createCart(userSaved);
+        userSaved.setCart(cart);
+        userRepository.save(userSaved);
+
+        return userSaved;
     }
 
     @Override
     public LoginResponse loginUser(LoginRequest loginRequest) {
 
         Optional<User> OpUser = userRepository.findByEmailIgnoreCase(loginRequest.email());
-        UserDetails user = userDetailsService.loadUserByUsername(OpUser.get().getUsername());
-        Authentication authentication = new UsernamePasswordAuthenticationToken(user,
-                loginRequest.password(), user.getAuthorities());
+        if (OpUser.isEmpty()) {
+            throw new RuntimeException("Invalid email or password");
+        }
+
+        User user = OpUser.get();
+        UserDetails userDetails = userDetailsService.loadUserByUsername(user.getUsername());
+
+        Authentication authentication = new UsernamePasswordAuthenticationToken(
+                userDetails,
+                loginRequest.password(),
+                userDetails.getAuthorities()
+        );
 
         authenticationManager.authenticate(authentication);
 
-        String jwt = jwtService.generateToken(user, generateExtraClaims(user));
+        String jwt = jwtService.generateToken(userDetails, generateExtraClaims(userDetails));
         return new LoginResponse(jwt);
     }
 
@@ -97,6 +118,7 @@ public class UserServiceImpl implements IUserService {
                 user.getAuthorities().stream()
                         .map(GrantedAuthority::getAuthority)
                         .collect(Collectors.toList()));
+        extraClaims.put("userId", user.getId());
         return extraClaims;
     }
 
