@@ -26,6 +26,9 @@ public class User implements UserDetails {
     @ManyToOne
     @JoinColumn(name = "role_id")
     private Role role;
+    @OneToOne
+    @JoinColumn(name = "cart_id")
+    private Cart cart;
     private boolean accountExpired;
     private boolean accountLocked;
     private boolean credentialsExpired;
