@@ -1,4 +1,4 @@
-package com.victordev.ferreclickbackend.exception;
+package com.victordev.ferreclickbackend.exceptions.product;
 
 public class ProductCreationException extends RuntimeException{
 

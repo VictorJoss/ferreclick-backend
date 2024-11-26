@@ -1,4 +1,4 @@
-package com.victordev.ferreclickbackend.exception;
+package com.victordev.ferreclickbackend.exceptions.product;
 
 public class CategoryNotFoundException extends RuntimeException {
     public CategoryNotFoundException(String message) {
