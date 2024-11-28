@@ -56,7 +56,7 @@ public class CartServiceImpl implements ICartService {
         List<CartItem> cartItems = cart.get().getItems();
         for (CartItem cartItem : cartItems) {
             if (cartItem.getProduct().getId().equals(productId)) {
-                cartItem.setQuantity(cartItem.getQuantity() + quantity);
+                cartItem.setQuantity(quantity);
                 cart.get().setItems(cartItems);
                 cartRepository.save(cart.get());
 
