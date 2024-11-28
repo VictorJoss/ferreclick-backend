@@ -16,19 +16,19 @@ public class CartController {
     @Autowired
     private ICartService cartService;
 
-    @PreAuthorize("permitAll()")
+    @PreAuthorize("hasAuthority('cart:add-product')")
     @PostMapping("/add-product")
     public ResponseEntity<AddedToCartResponse> addProductToCart(@RequestBody AddToCartRequest addToCartRequest){
         return ResponseEntity.ok(cartService.addProductToCart(addToCartRequest));
     }
 
-    @PreAuthorize("permitAll()")
+    @PreAuthorize("hasAuthority('cart:read')")
     @GetMapping("/{userId}")
     public ResponseEntity<CartResponse> getCartByUserId(@PathVariable Long userId){
         return ResponseEntity.ok(cartService.getCartByUserId(userId));
     }
 
-    @PreAuthorize("permitAll()")
+    @PreAuthorize("hasAuthority('cart:remove-product')")
     @DeleteMapping("/remove-product/{userId}/{productId}")
     public ResponseEntity<Void> removeProductFromCart(@PathVariable Long userId, @PathVariable Long productId) {
         cartService.removeProductFromCart(userId, productId);
