@@ -12,4 +12,5 @@ public interface ICartService {
     CartResponse getCartByUserId(Long userId);
     void removeProductFromCart(Long userId, Long productId);
     Cart createCart(User user);
+    void clearCart(Long userId);
 }

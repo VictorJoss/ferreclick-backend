@@ -110,6 +110,21 @@ public class CartServiceImpl implements ICartService {
         cartItemRepository.deleteByProduct_Id(productId);
     }
 
+    @Transactional
+    public void clearCart(Long userId){
+        Optional<User> user = userRepository.findById(userId);
+        if (!user.isPresent()) {
+            throw new RuntimeException("User doesn't exist");
+        }
+
+        Long cartId = user.get().getCart().getId();
+        Optional<Cart> cart = cartRepository.findById(cartId);
+        if (!cart.isPresent()) {
+            throw new RuntimeException("Cart doesn't exist");
+        }
+        cartItemRepository.deleteAllByCart_Id(cartId);
+    }
+
     public Cart createCart(User user){
         Cart cart = new Cart();
         cart.setUser(user);

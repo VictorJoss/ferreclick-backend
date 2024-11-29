@@ -34,4 +34,11 @@ public class CartController {
         cartService.removeProductFromCart(userId, productId);
         return ResponseEntity.noContent().build();
     }
+
+    @PreAuthorize("hasAuthority('cart:remove-product')")
+    @DeleteMapping("/remove-product/all/{userId}")
+    public ResponseEntity<Void> removeProductFromCart(@PathVariable Long userId) {
+        cartService.clearCart(userId);
+        return ResponseEntity.noContent().build();
+    }
 }
