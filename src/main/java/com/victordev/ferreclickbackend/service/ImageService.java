@@ -1,10 +1,7 @@
 package com.victordev.ferreclickbackend.service;
 
-import com.victordev.ferreclickbackend.dto.api.ImageModel;
-import org.springframework.http.ResponseEntity;
-
-import java.util.Map;
+import org.springframework.web.multipart.MultipartFile;
 
 public interface ImageService {
-    ResponseEntity<Map> uploadImage(ImageModel imageModel);
+    String uploadImage(MultipartFile file);
 }

@@ -1,13 +1,12 @@
 package com.victordev.ferreclickbackend.service.impl;
 
-import com.victordev.ferreclickbackend.dto.api.ImageModel;
 import com.victordev.ferreclickbackend.persistence.entity.Image;
 import com.victordev.ferreclickbackend.persistence.repository.ImageRepository;
 import com.victordev.ferreclickbackend.service.ICloudinaryService;
 import com.victordev.ferreclickbackend.service.ImageService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Map;
 
@@ -21,25 +20,21 @@ public class ImageServiceImpl implements ImageService {
 
 
     @Override
-    public ResponseEntity<Map> uploadImage(ImageModel imageModel) {
+    public String uploadImage(MultipartFile file) {
         try {
-            if (imageModel.getName().isEmpty()) {
-                return ResponseEntity.badRequest().build();
-            }
-            if (imageModel.getFile().isEmpty()) {
-                return ResponseEntity.badRequest().build();
+            if (file.isEmpty()) {
+                throw new RuntimeException("File is empty");
             }
             Image image = new Image();
-            image.setName(imageModel.getName());
-            image.setUrl(cloudinaryService.uploadFile(imageModel.getFile(), "ferreclick"));
-            if(image.getUrl() == null) {
-                return ResponseEntity.badRequest().build();
+            image.setUrl(cloudinaryService.uploadFile(file, "ferreclick"));
+            String url = image.getUrl();
+            if(url == null) {
+                throw new RuntimeException("Error creating image url");
             }
             imageRepository.save(image);
-            return ResponseEntity.ok().body(Map.of("url", image.getUrl()));
+            return url;
         } catch (Exception e) {
-            e.printStackTrace();
-            return null;
+            throw new RuntimeException("Error uploading image");
         }
     }
 }
