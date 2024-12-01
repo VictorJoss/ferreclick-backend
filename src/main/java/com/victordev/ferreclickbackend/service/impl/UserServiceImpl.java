@@ -1,6 +1,7 @@
 package com.victordev.ferreclickbackend.service.impl;
 
 import com.victordev.ferreclickbackend.dto.api.RegistrationBody;
+import com.victordev.ferreclickbackend.dto.api.UserDto;
 import com.victordev.ferreclickbackend.dto.security.LoginRequest;
 import com.victordev.ferreclickbackend.dto.security.LoginResponse;
 import com.victordev.ferreclickbackend.exceptions.user.UserAlreadyExistsException;
@@ -120,6 +121,19 @@ public class UserServiceImpl implements IUserService {
                         .collect(Collectors.toList()));
         extraClaims.put("userId", user.getId());
         return extraClaims;
+    }
+
+    public UserDto getUser(Long userId){
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found with id: "+ userId));
+
+        UserDto userDto = new UserDto();
+        userDto.setName(user.getName());
+        userDto.setUsername(user.getUsername());
+        userDto.setEmail(user.getEmail());
+        userDto.setRole(user.getRole().getName().name());
+
+        return userDto;
     }
 
     public void logout(){
