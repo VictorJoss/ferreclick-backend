@@ -7,8 +7,7 @@ import java.util.List;
 
 @Getter
 @Setter
-public class ProductCategoryBody {
-    private Long id;
+public class DProductCategoryBody {
     private String name;
     private String description;
     private List<Long> productIds;

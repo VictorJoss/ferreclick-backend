@@ -1,15 +1,18 @@
 package com.victordev.ferreclickbackend.service;
 
-import com.victordev.ferreclickbackend.dto.api.ProductCategoryResponse;
-import com.victordev.ferreclickbackend.persistence.entity.ProductCategory;
+import com.victordev.ferreclickbackend.dto.api.ProductCategoryBody;
 
 import java.util.List;
 import java.util.Optional;
 
 public interface IProductCategoryService {
-    ProductCategoryResponse createCategory(ProductCategory productCategory, List<Long> productIds);
+    ProductCategoryBody createCategory(ProductCategoryBody categoryBody);
 
-    List<ProductCategoryResponse> getCategories();
+    List<ProductCategoryBody> getCategories();
 
-    Optional<ProductCategoryResponse> getCategoryById(Long id);
+    Optional<ProductCategoryBody> getCategoryById(Long id);
+
+    ProductCategoryBody updateCategory(ProductCategoryBody categoryBody);
+
+    void deleteCategory(Long categoryId);
 }

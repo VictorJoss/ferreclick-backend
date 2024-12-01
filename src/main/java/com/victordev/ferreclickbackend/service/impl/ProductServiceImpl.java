@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -89,8 +90,45 @@ public class ProductServiceImpl implements IProductService {
     }
 
     @Transactional
+    public ProductResponse updateProduct(UpdateProductBody updateProductBody) {
+
+        Product existingProduct = productRepository.findById(updateProductBody.getId())
+                .orElseThrow(() -> new RuntimeException("Product not found with id: " + updateProductBody.getId()));
+
+        existingProduct.setName(updateProductBody.getName());
+        existingProduct.setDescription(updateProductBody.getDescription());
+        existingProduct.setPrice(updateProductBody.getPrice());
+        existingProduct.setCategories(new ArrayList<>());
+        productProductCategoryRepository.deleteByProduct_Id(existingProduct.getId());
+
+        if(updateProductBody.getImage() != null && !updateProductBody.getImage().isEmpty()){
+            imageService.deleteImage(existingProduct.getImage());
+            existingProduct.setImage(imageService.uploadImage(updateProductBody.getImage()));
+        }
+
+        List<Long> categoryIds = updateProductBody.getCategoryIds();
+        addCategoriesToProduct(categoryIds, existingProduct);
+
+        Product savedProduct = productRepository.save(existingProduct);
+        return dtoConverter.getProduct(savedProduct);
+    }
+
+    @Transactional
+    public void deleteProduct(Long productId){
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("Product not found with id: " + productId));
+        try {
+            cartItemRepository.deleteByProduct_Id(product.getId());
+            productRepository.deleteById(product.getId());
+            imageService.deleteImage(product.getImage());
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to delete product with id: " + productId, e);
+        }
+    }
+
+    @Transactional
     protected void addCategoriesToProduct(List<Long> categoryIds, Product product){
-        if (categoryIds == null && categoryIds.isEmpty()) {
+        if (categoryIds == null || categoryIds.isEmpty()) {
             throw new RuntimeException("Categories is null or empty");
         }
             List<Product_ProductCategory> productCategories = categoryIds.stream()

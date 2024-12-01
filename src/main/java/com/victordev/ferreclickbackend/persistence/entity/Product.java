@@ -21,7 +21,7 @@ public class Product {
     private String description;
     private String image;
     private Double price;
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "product")
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "product", cascade = CascadeType.REMOVE)
     @JsonIgnore
     private List<Product_ProductCategory> categories;
 }

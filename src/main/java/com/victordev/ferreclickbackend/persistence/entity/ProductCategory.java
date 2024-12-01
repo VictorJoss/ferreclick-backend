@@ -16,6 +16,6 @@ public class ProductCategory {
     private Long id;
     private String name;
     private String description;
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "category")
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "category", cascade = CascadeType.REMOVE)
     private List<Product_ProductCategory> products;
 }

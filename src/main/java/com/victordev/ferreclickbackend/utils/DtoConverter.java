@@ -1,6 +1,6 @@
 package com.victordev.ferreclickbackend.utils;
 
-import com.victordev.ferreclickbackend.dto.api.ProductCategoryResponse;
+import com.victordev.ferreclickbackend.dto.api.ProductCategoryBody;
 import com.victordev.ferreclickbackend.dto.api.ProductResponse;
 import com.victordev.ferreclickbackend.persistence.entity.Product;
 import com.victordev.ferreclickbackend.persistence.entity.ProductCategory;
@@ -25,18 +25,18 @@ public class DtoConverter {
         return productResponse;
     }
 
-    public ProductCategoryResponse getProductCategory(ProductCategory category) {
-        ProductCategoryResponse productCategoryResponse = new ProductCategoryResponse();
-        productCategoryResponse.setId(category.getId());
-        productCategoryResponse.setName(category.getName());
-        productCategoryResponse.setDescription(category.getDescription());
+    public ProductCategoryBody getProductCategory(ProductCategory category) {
+        ProductCategoryBody productCategoryBody = new ProductCategoryBody();
+        productCategoryBody.setId(category.getId());
+        productCategoryBody.setName(category.getName());
+        productCategoryBody.setDescription(category.getDescription());
         if (category.getProducts() == null || category.getProducts().isEmpty()) {
-            productCategoryResponse.setProductIds(new ArrayList<>());
-            return productCategoryResponse;
+            productCategoryBody.setProductIds(new ArrayList<>());
+            return productCategoryBody;
         }
-        productCategoryResponse.setProductIds(category.getProducts().stream()
+        productCategoryBody.setProductIds(category.getProducts().stream()
                     .map(pc -> pc.getProduct().getId())
                     .collect(Collectors.toList()));
-        return productCategoryResponse;
+        return productCategoryBody;
     }
 }

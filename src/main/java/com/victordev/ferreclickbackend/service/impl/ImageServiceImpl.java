@@ -37,4 +37,12 @@ public class ImageServiceImpl implements ImageService {
             throw new RuntimeException("Error uploading image");
         }
     }
+
+    public void deleteImage(String imageUrl){
+        try {
+            cloudinaryService.deleteFile(imageUrl, "ferreclick");
+        } catch (Exception e) {
+            throw new RuntimeException("Error deleting image", e);
+        }
+    }
 }
