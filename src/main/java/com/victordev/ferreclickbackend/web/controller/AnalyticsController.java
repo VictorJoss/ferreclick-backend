@@ -28,13 +28,13 @@ public class AnalyticsController {
 
     @PreAuthorize("permitAll()")
     @GetMapping("/top-products")
-    public ResponseEntity<List<TopProductDto>> getTopSellingProducts() {
-        return ResponseEntity.ok(analyticsService.getTopSellingProducts());
+    public ResponseEntity<List<TopProductDto>> getMostAddedProductsToCart() {
+        return ResponseEntity.ok(analyticsService.getMostAddedProductsToCart());
     }
 
     @PreAuthorize("permitAll()")
     @GetMapping("/category-distribution")
-    public ResponseEntity<List<CategoryDistributionDto>> getCategoryDistribution() {
-        return ResponseEntity.ok(analyticsService.getCategoryDistribution());
+    public ResponseEntity<List<CategoryDistributionDto>> getMostAddedCategoriesToCart() {
+        return ResponseEntity.ok(analyticsService.getMostAddedCategoriesToCart());
     }
 }
