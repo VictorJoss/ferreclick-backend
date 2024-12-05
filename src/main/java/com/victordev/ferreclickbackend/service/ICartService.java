@@ -13,4 +13,5 @@ public interface ICartService {
     void removeProductFromCart(Long userId, Long productId);
     Cart createCart(User user);
     void clearCart(Long userId);
+    void processPaymentCart(Long userId);
 }

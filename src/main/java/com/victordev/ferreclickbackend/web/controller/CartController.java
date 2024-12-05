@@ -37,8 +37,15 @@ public class CartController {
 
     @PreAuthorize("hasAuthority('cart:remove-product')")
     @DeleteMapping("/remove-product/all/{userId}")
-    public ResponseEntity<Void> removeProductFromCart(@PathVariable Long userId) {
+    public ResponseEntity<Void> removeAllProducts(@PathVariable Long userId) {
         cartService.clearCart(userId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PreAuthorize("hasAuthority('cart:pay')")
+    @PostMapping("/pay/{userId}")
+    public ResponseEntity<Void> payCart(@PathVariable Long userId) {
+        cartService.processPaymentCart(userId);
         return ResponseEntity.noContent().build();
     }
 }

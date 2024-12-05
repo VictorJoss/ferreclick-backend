@@ -141,4 +141,39 @@ public class CartServiceImpl implements ICartService {
         cart.setCompleted(false);
         return cartRepository.save(cart);
     }
+
+    @Transactional
+    public void processPaymentCart(Long userId){
+        Optional<User> user = userRepository.findById(userId);
+        if (!user.isPresent()) {
+            throw new RuntimeException("User doesn't exist");
+        }
+
+        Long cartId = getActiveCartId(user.get());
+        Optional<Cart> cart = cartRepository.findById(cartId);
+        if (!cart.isPresent()) {
+            throw new RuntimeException("Cart doesn't exist");
+        }
+
+        try {
+            cart.get().setCompleted(true);
+            cartRepository.save(cart.get());
+
+            Cart newCart = createCart(user.get());
+            List<Cart> updateCarts = user.get().getCarts();
+            updateCarts.add(newCart);
+            user.get().setCarts(updateCarts);
+            userRepository.save(user.get());
+        }catch (Exception e){
+            throw new RuntimeException("Error trying to process payment", e);
+        }
+    }
+
+    private Long getActiveCartId(User user){
+        return user.getCarts()
+                .stream()
+                .filter(cart -> !cart.isCompleted())
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("No active cart found")).getId();
+    }
 }
