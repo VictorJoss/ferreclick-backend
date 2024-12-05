@@ -76,8 +76,6 @@ public class ProductCategoryServiceImpl implements IProductCategoryService {
 
         existingCategory.setName(categoryBody.getName());
         existingCategory.setDescription(categoryBody.getDescription());
-        existingCategory.setProducts(new ArrayList<>());
-        productProductCategoryRepository.deleteByCategory_Id(existingCategory.getId());
 
         List<Long> productIds = categoryBody.getProductIds();
         addProductsToCategory(productIds, existingCategory);
