@@ -16,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -46,7 +47,7 @@ public class CartServiceImpl implements ICartService {
             throw new RuntimeException("user or product doesn't exist");
         }
 
-        Long cartId = user.get().getCart().getId();
+        Long cartId = getActiveCartId(user.get());
         Optional<Cart> cart = cartRepository.findById(cartId);
 
         if (!cart.isPresent()) {
@@ -85,7 +86,7 @@ public class CartServiceImpl implements ICartService {
         if (!user.isPresent()){
             throw new RuntimeException("User doesn't exist");
         }
-        Long cartId = user.get().getCart().getId();
+        Long cartId = getActiveCartId(user.get());
         return new CartResponse(cartItemRepository.findByCart_Id(cartId));
     }
 
@@ -96,7 +97,7 @@ public class CartServiceImpl implements ICartService {
             throw new RuntimeException("User doesn't exist");
         }
 
-        Long cartId = user.get().getCart().getId();
+        Long cartId = getActiveCartId(user.get());
         Optional<Cart> cart = cartRepository.findById(cartId);
         if (!cart.isPresent()) {
             throw new RuntimeException("Cart doesn't exist");
@@ -117,7 +118,7 @@ public class CartServiceImpl implements ICartService {
             throw new RuntimeException("User doesn't exist");
         }
 
-        Long cartId = user.get().getCart().getId();
+        Long cartId = getActiveCartId(user.get());
         Optional<Cart> cart = cartRepository.findById(cartId);
         if (!cart.isPresent()) {
             throw new RuntimeException("Cart doesn't exist");
@@ -125,10 +126,19 @@ public class CartServiceImpl implements ICartService {
         cartItemRepository.deleteAllByCart_Id(cartId);
     }
 
+    @Transactional
     public Cart createCart(User user){
+
+        Optional<User> existingUser = userRepository.findById(user.getId());
+        if (!existingUser.isPresent()) {
+            throw new RuntimeException("User doesn't exist");
+        }
+
         Cart cart = new Cart();
         cart.setUser(user);
         cart.setItems(new ArrayList<>());
+        cart.setCreatedDate(LocalDateTime.now());
+        cart.setCompleted(false);
         return cartRepository.save(cart);
     }
 }

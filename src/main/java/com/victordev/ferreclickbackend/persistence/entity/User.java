@@ -26,9 +26,8 @@ public class User implements UserDetails {
     @ManyToOne
     @JoinColumn(name = "role_id")
     private Role role;
-    @OneToOne
-    @JoinColumn(name = "cart_id")
-    private Cart cart;
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "user")
+    private List<Cart> carts;
     private boolean accountExpired;
     private boolean accountLocked;
     private boolean credentialsExpired;

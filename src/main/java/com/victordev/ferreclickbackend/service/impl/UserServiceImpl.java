@@ -25,9 +25,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -78,8 +76,10 @@ public class UserServiceImpl implements IUserService {
         user.setCredentialsExpired(false);
 
         User userSaved = userRepository.save(user);
-        Cart cart = cartService.createCart(userSaved);
-        userSaved.setCart(cart);
+        Cart newCart = cartService.createCart(userSaved);
+        List<Cart> carts = new ArrayList<>();
+        carts.add(newCart);
+        userSaved.setCarts(carts);
         userRepository.save(userSaved);
 
         return userSaved;
