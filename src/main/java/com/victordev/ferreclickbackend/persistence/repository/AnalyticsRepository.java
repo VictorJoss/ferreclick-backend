@@ -19,10 +19,16 @@ public interface AnalyticsRepository extends JpaRepository<CartItem, Long> {
     @Query("SELECT p.name, SUM(ci.quantity) AS totalSold " +
             "FROM CartItem ci JOIN ci.product p " +
             "GROUP BY p.name ORDER BY totalSold DESC")
-    List<Object[]> findTopSellingProducts();
+    List<Object[]> findMostAddedProductsToCart();
 
-    @Query("SELECT pc.name, COUNT(ci) AS categoryCount " +
-            "FROM ProductCategory pc JOIN pc.products pp JOIN pp.product ci " +
-            "GROUP BY pc.name")
-    List<Object[]> findCategoryDistribution();
+    @Query("""
+    SELECT pc.name AS categoryName, COUNT(ci) AS categoryCount
+    FROM CartItem ci
+    JOIN ci.product p
+    JOIN p.categories pc_p
+    JOIN pc_p.category pc
+    GROUP BY pc.name
+    ORDER BY categoryCount DESC
+    """)
+    List<Object[]> findMostAddedCategoriesToCart();
 }

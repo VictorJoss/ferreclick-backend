@@ -24,15 +24,15 @@ public class AnalyticsServiceImpl implements IAnalyticsService {
                 .collect(Collectors.toList());
     }
 
-    public List<TopProductDto> getTopSellingProducts() {
-        List<Object[]> results = analyticsRepository.findTopSellingProducts();
+    public List<TopProductDto> getMostAddedProductsToCart() {
+        List<Object[]> results = analyticsRepository.findMostAddedProductsToCart();
         return results.stream()
                 .map(row -> new TopProductDto((String) row[0], (Long) row[1]))
                 .collect(Collectors.toList());
     }
 
-    public List<CategoryDistributionDto> getCategoryDistribution() {
-        List<Object[]> results = analyticsRepository.findCategoryDistribution();
+    public List<CategoryDistributionDto> getMostAddedCategoriesToCart() {
+        List<Object[]> results = analyticsRepository.findMostAddedCategoriesToCart();
         return results.stream()
                 .map(row -> new CategoryDistributionDto((String) row[0], (Long) row[1]))
                 .collect(Collectors.toList());
