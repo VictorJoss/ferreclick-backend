@@ -18,27 +18,37 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.Optional;
 
+/**
+ * Controlador REST que maneja las peticiones relacionadas con los productos.
+ */
 @RestController
 @RequestMapping("/api/products")
 public class ProductController {
 
+    /**
+     * Servicio de productos.
+     */
     @Autowired
     private IProductService productService;
-    @Autowired
-    private ProductRepository productRepository;
-    @Autowired
-    private CartItemRepository cartItemRepository;
-    @Autowired
-    private ImageService imageService;
 
+    /**
+     * Obtiene todos los productos.
+     *
+     * @return Lista de objetos `ProductResponse` que representan los productos.
+     */
     @PreAuthorize("permitAll()")
     @GetMapping
     public List<ProductResponse> getAllProducts() {
         return productService.getAllProducts();
     }
 
+    /**
+     * Obtiene un producto por su identificador.
+     *
+     * @param id Identificador del producto.
+     * @return Respuesta HTTP que contiene la información del producto.
+     */
     @PreAuthorize("permitAll()")
     @GetMapping("/{id}")
     public ResponseEntity<ProductResponse> getProductById(@PathVariable Long id) {
@@ -47,6 +57,16 @@ public class ProductController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    /**
+     * Crea un nuevo producto.
+     *
+     * @param name           Nombre del producto.
+     * @param description    Descripción del producto.
+     * @param price          Precio del producto.
+     * @param categoryIdsJson Identificadores de las categorías del producto.
+     * @param image          Imagen del producto.
+     * @return Respuesta HTTP que indica si el producto ha sido creado correctamente.
+     */
     @PreAuthorize("hasAuthority('product:create')")
     @PostMapping
     public ResponseEntity<ProductResponse> createProduct(
@@ -76,6 +96,12 @@ public class ProductController {
         }
     }
 
+    /**
+     * Obtiene los productos de una categoría.
+     *
+     * @param categoryId Identificador de la categoría.
+     * @return Lista de objetos `ProductResponse` que representan los productos de la categoría.
+     */
     @PreAuthorize("permitAll()")
     @GetMapping("/category/{categoryId}")
     public ResponseEntity<List<ProductResponse>> getProductsByCategory(@PathVariable Long categoryId) {
@@ -87,6 +113,17 @@ public class ProductController {
         }
     }
 
+    /**
+     * Actualiza un producto.
+     *
+     * @param productId      Identificador del producto.
+     * @param name           Nombre del producto.
+     * @param description    Descripción del producto.
+     * @param price          Precio del producto.
+     * @param categoryIdsJson Identificadores de las categorías del producto.
+     * @param image          Imagen del producto.
+     * @return Respuesta HTTP que indica si el producto ha sido actualizado correctamente.
+     */
     @PreAuthorize("hasAuthority('product:update')")
     @PutMapping
     public ResponseEntity<ProductResponse> UpdateProduct(
@@ -118,6 +155,12 @@ public class ProductController {
         }
     }
 
+    /**
+     * Elimina un producto.
+     *
+     * @param productId Identificador del producto.
+     * @return Respuesta HTTP que indica si el producto ha sido eliminado correctamente.
+     */
     @PreAuthorize("hasAuthority('product:delete')")
     @DeleteMapping("/{productId}")
     public ResponseEntity<Void> deleteProductById(@PathVariable Long productId) {

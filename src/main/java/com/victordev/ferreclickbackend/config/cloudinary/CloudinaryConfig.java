@@ -6,6 +6,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+/**
+ * Configuración de Cloudinary.
+ */
 @Configuration
 public class CloudinaryConfig {
 
@@ -18,6 +21,10 @@ public class CloudinaryConfig {
     @Value("${cloudinary.api_secret}")
     private String apiSecret;
 
+    /**
+     * Bean de Cloudinary.
+     * @return Instancia de Cloudinary.
+     */
     @Bean
     public Cloudinary cloudinary() {
         return new Cloudinary(ObjectUtils.asMap(

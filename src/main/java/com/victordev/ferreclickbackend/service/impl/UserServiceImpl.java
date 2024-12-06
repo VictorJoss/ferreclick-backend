@@ -28,29 +28,58 @@ import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Implementación del servicio de usuarios que proporciona métodos para registrar y autenticar usuarios.
+ */
 @Service
 public class UserServiceImpl implements IUserService {
 
+    /**
+     * Repositorio de usuarios.
+     */
     @Autowired
     private UserRepository userRepository;
-    @Autowired
-    private CartRepository cartRepository;
+    /**
+     * Repositorio de roles.
+     */
     @Autowired
     private RoleRepository roleRepository;
+    /**
+     * Codificador de contraseñas.
+     */
     @Autowired
     private PasswordEncoder passwordEncoder;
+    /**
+     * Configuración de seguridad HTTP.
+     */
     @Autowired
     private HttpSecurity http;
+    /**
+     * Detalles del usuario.
+     */
     @Autowired
     private UserDetailsService userDetailsService;
+    /**
+     * Gestor de autenticación.
+     */
     @Autowired
     private AuthenticationManager authenticationManager;
+    /**
+     * Servicio de JWT.
+     */
     @Autowired
     private JwtService jwtService;
+    /**
+     * Servicio de carrito.
+     */
     @Autowired
     private ICartService cartService;
 
-
+    /**
+     * Registra un nuevo usuario.
+     * @param registrationBody Objeto que contiene la información del usuario a registrar.
+     * @return Objeto que contiene la información del usuario registrado.
+     */
     @Override
     public User registerUser(RegistrationBody registrationBody) throws UserAlreadyExistsException {
 
@@ -85,6 +114,11 @@ public class UserServiceImpl implements IUserService {
         return userSaved;
     }
 
+    /**
+     * Autentica un usuario.
+     * @param loginRequest Objeto que contiene la información del usuario a autenticar.
+     * @return Objeto que contiene el token de autenticación.
+     */
     @Override
     public LoginResponse loginUser(LoginRequest loginRequest) {
 
@@ -108,6 +142,11 @@ public class UserServiceImpl implements IUserService {
         return new LoginResponse(jwt);
     }
 
+    /**
+     * Genera los claims adicionales que se incluirán en el token JWT.
+     * @param userDetails Detalles del usuario autenticado.
+     * @return Mapa con los claims adicionales.
+     */
     private Map<String, Object> generateExtraClaims(UserDetails userDetails){
         Map<String, Object> extraClaims = new HashMap<>();
 
@@ -123,6 +162,11 @@ public class UserServiceImpl implements IUserService {
         return extraClaims;
     }
 
+    /**
+     * Obtiene la información de un usuario.
+     * @param userId Identificador del usuario.
+     * @return Objeto que contiene la información del usuario.
+     */
     public UserDto getUser(Long userId){
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: "+ userId));
@@ -136,6 +180,9 @@ public class UserServiceImpl implements IUserService {
         return userDto;
     }
 
+    /**
+     * Cierra la sesión de un usuario.
+     */
     public void logout(){
         try{
             http.logout(httpSecurityLogoutConfigurer -> {

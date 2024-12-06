@@ -11,12 +11,24 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Implementación del servicio de análisis que proporciona métodos para obtener ingresos mensuales,
+ * productos más añadidos al carrito y categorías más añadidas al carrito.
+ */
 @Service
 public class AnalyticsServiceImpl implements IAnalyticsService {
 
+    /**
+     * Repositorio de análisis.
+     */
     @Autowired
     private AnalyticsRepository analyticsRepository;
 
+    /**
+     * Obtiene los ingresos mensuales.
+     *
+     * @return Lista de objetos `MonthlyRevenueDto` que representan los ingresos mensuales.
+     */
     public List<MonthlyRevenueDto> getMonthlyRevenue() {
         List<Object[]> results = analyticsRepository.findMonthlyRevenue();
         return results.stream()
@@ -24,6 +36,11 @@ public class AnalyticsServiceImpl implements IAnalyticsService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Obtiene los productos más añadidos al carrito.
+     *
+     * @return Lista de objetos `TopProductDto` que representan los productos más añadidos al carrito.
+     */
     public List<TopProductDto> getMostAddedProductsToCart() {
         List<Object[]> results = analyticsRepository.findMostAddedProductsToCart();
         return results.stream()
@@ -31,6 +48,11 @@ public class AnalyticsServiceImpl implements IAnalyticsService {
                 .collect(Collectors.toList());
     }
 
+     /**
+     * Obtiene las categorías más añadidas al carrito.
+     *
+     * @return Lista de objetos `CategoryDistributionDto` que representan las categorías más añadidas al carrito.
+     */
     public List<CategoryDistributionDto> getMostAddedCategoriesToCart() {
         List<Object[]> results = analyticsRepository.findMostAddedCategoriesToCart();
         return results.stream()

@@ -10,12 +10,24 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Implementación del servicio de Cloudinary que proporciona métodos para subir y eliminar archivos.
+ */
 @Service
 public class CloudinayServiceImpl implements ICloudinaryService {
 
+    /**
+     * Instancia de Cloudinary.
+     */
     @Resource
     private Cloudinary cloudinary;
 
+    /**
+     * Sube un archivo a Cloudinary.
+     * @param file Archivo a subir.
+     * @param folderName Nombre de la carpeta en la que se guardará el archivo.
+     * @return URL del archivo subido.
+     */
     @Override
     public String uploadFile(MultipartFile file, String folderName) {
         try{
@@ -29,6 +41,11 @@ public class CloudinayServiceImpl implements ICloudinaryService {
         }
     }
 
+    /**
+     * Elimina un archivo de Cloudinary.
+     * @param urlFile URL del archivo a eliminar.
+     * @param folderName Nombre de la carpeta en la que se encuentra el archivo.
+     */
     @Override
     public void deleteFile(String urlFile, String folderName){
         try {
@@ -39,12 +56,22 @@ public class CloudinayServiceImpl implements ICloudinaryService {
         }
     }
 
+    /**
+     * Obtiene las opciones para subir o eliminar un archivo.
+     * @param folderName Nombre de la carpeta en la que se guardará o se encuentra el archivo.
+     * @return Opciones para subir o eliminar un archivo.
+     */
     private HashMap<Object, Object> getOptions(String folderName){
         HashMap<Object, Object> options = new HashMap<>();
         options.put("folder", folderName);
         return options;
     }
 
+    /**
+     * Extrae el public ID de un URL de Cloudinary.
+     * @param url URL del archivo en Cloudinary.
+     * @return Public ID del archivo.
+     */
     private String extractPublicId(String url) {
         if (url == null || url.isEmpty()) {
             throw new IllegalArgumentException("El URL no puede ser nulo o vacío");

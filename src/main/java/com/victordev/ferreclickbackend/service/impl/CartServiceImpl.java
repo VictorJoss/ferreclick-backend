@@ -21,18 +21,40 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Implementación del servicio de carrito que proporciona métodos para añadir productos al carrito, obtener el carrito
+ * de un usuario, eliminar productos del carrito y vaciar el carrito.
+ */
 @Service
 public class CartServiceImpl implements ICartService {
 
+    /**
+     * Repositorio de usuarios.
+     */
     @Autowired
     private UserRepository userRepository;
+    /**
+     * Repositorio de productos.
+     */
     @Autowired
     private ProductRepository productRepository;
+    /**
+     * Repositorio de carritos.
+     */
     @Autowired
     private CartRepository cartRepository;
+    /**
+     * Repositorio de elementos de carrito.
+     */
     @Autowired
     private CartItemRepository cartItemRepository;
 
+
+    /**
+     * Añade un producto al carrito de un usuario.
+     * @param addToCartRequest Objeto que contiene la información necesaria para añadir un producto al carrito.
+     * @return Objeto que contiene el producto añadido y la cantidad añadida.
+     */
     @Transactional
     public AddedToCartResponse addProductToCart(AddToCartRequest addToCartRequest) {
         Long userId = addToCartRequest.getUserId();
@@ -81,6 +103,11 @@ public class CartServiceImpl implements ICartService {
         return addedtocarresponse;
     }
 
+    /**
+     * Obtiene el carrito de un usuario.
+     * @param userId Identificador del usuario.
+     * @return Objeto que contiene los productos del carrito.
+     */
     public CartResponse getCartByUserId(Long userId){
         Optional<User> user = userRepository.findById(userId);
         if (!user.isPresent()){
@@ -90,6 +117,11 @@ public class CartServiceImpl implements ICartService {
         return new CartResponse(cartItemRepository.findByCart_Id(cartId));
     }
 
+    /**
+     * Elimina un producto del carrito de un usuario.
+     * @param userId Identificador del usuario.
+     * @param productId Identificador del producto.
+     */
     @Transactional
     public void removeProductFromCart(Long userId, Long productId) {
         Optional<User> user = userRepository.findById(userId);
@@ -111,6 +143,10 @@ public class CartServiceImpl implements ICartService {
         cartItemRepository.deleteByProduct_Id(productId);
     }
 
+    /**
+     * Vacia el carrito de un usuario.
+     * @param userId Identificador del usuario.
+     */
     @Transactional
     public void clearCart(Long userId){
         Optional<User> user = userRepository.findById(userId);
@@ -126,6 +162,11 @@ public class CartServiceImpl implements ICartService {
         cartItemRepository.deleteAllByCart_Id(cartId);
     }
 
+    /**
+     * Crea un carrito para un usuario.
+     * @param user Usuario al que se le creará el carrito.
+     * @return Carrito creado.
+     */
     @Transactional
     public Cart createCart(User user){
 
@@ -142,6 +183,10 @@ public class CartServiceImpl implements ICartService {
         return cartRepository.save(cart);
     }
 
+    /**
+     * Procesa el pago de un carrito.
+     * @param userId Identificador del usuario.
+     */
     @Transactional
     public void processPaymentCart(Long userId){
         Optional<User> user = userRepository.findById(userId);
@@ -169,6 +214,11 @@ public class CartServiceImpl implements ICartService {
         }
     }
 
+    /**
+     * Obtiene el identificador del carrito activo de un usuario.
+     * @param user Usuario del que se obtendrá el carrito.
+     * @return Identificador del carrito activo.
+     */
     private Long getActiveCartId(User user){
         return user.getCarts()
                 .stream()

@@ -20,27 +20,48 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * Implementación del servicio de productos que proporciona métodos para crear, obtener, actualizar y eliminar productos.
+ */
 @Service
 public class ProductServiceImpl implements IProductService {
 
+    /**
+     * Repositorio de productos.
+     */
     @Autowired
     private ProductRepository productRepository;
-
+    /**
+     * Repositorio de categorías de productos.
+     */
     @Autowired
     private ProductCategoryRepository categoryRepository;
-
+    /**
+     * Repositorio de productos en categorías.
+     */
     @Autowired
     private Product_ProductCategoryRepository productProductCategoryRepository;
-
+    /**
+     * Conversor de DTO.
+     */
     @Autowired
     private DtoConverter dtoConverter;
-    @Autowired
-    private UserRepository userRepository;
+    /**
+     * Repositorio de categorías de productos.
+     */
     @Autowired
     private ImageService imageService;
+    /**
+     * Repositorio de categorías de productos.
+     */
     @Autowired
     private CartItemRepository cartItemRepository;
 
+    /**
+     * Crea un nuevo producto.
+     * @param productBody Objeto que contiene la información del producto a crear.
+     * @return Objeto que contiene la información del producto creado.
+     */
     @Transactional
     public ProductResponse createProduct(ProductBody productBody) {
 
@@ -74,14 +95,28 @@ public class ProductServiceImpl implements IProductService {
         }
     }
 
+    /**
+     * Obtiene todos los productos.
+     * @return Lista de objetos `ProductResponse` que representan los productos.
+     */
     public List<ProductResponse> getAllProducts() {
         return productRepository.findAll().stream().map(dtoConverter::getProduct).collect(Collectors.toList());
     }
 
+    /**
+     * Obtiene un producto por su identificador.
+     * @param id Identificador del producto.
+     * @return Objeto `ProductResponse` que representa el producto.
+     */
     public Optional<ProductResponse> getProductById(Long id) {
         return productRepository.findById(id).map(dtoConverter::getProduct);
     }
 
+    /**
+     * Obtiene los productos de una categoría.
+     * @param categoryId Identificador de la categoría.
+     * @return Lista de objetos `ProductResponse` que representan los productos de la categoría.
+     */
     public List<ProductResponse> getProductsByCategory(Long categoryId) {
         List<Product> products = productProductCategoryRepository.findProductsByCategoryId(categoryId);
         return products.stream()
@@ -89,6 +124,11 @@ public class ProductServiceImpl implements IProductService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Actualiza un producto.
+     * @param updateProductBody Objeto que contiene la información del producto a actualizar.
+     * @return Objeto que contiene la información del producto actualizado.
+     */
     @Transactional
     public ProductResponse updateProduct(UpdateProductBody updateProductBody) {
 
@@ -113,6 +153,10 @@ public class ProductServiceImpl implements IProductService {
         return dtoConverter.getProduct(savedProduct);
     }
 
+    /**
+     * Elimina un producto.
+     * @param productId Identificador del producto a eliminar.
+     */
     @Transactional
     public void deleteProduct(Long productId){
         Product product = productRepository.findById(productId)
@@ -126,6 +170,11 @@ public class ProductServiceImpl implements IProductService {
         }
     }
 
+    /**
+     * Añade categorías a un producto.
+     * @param categoryIds Identificadores de las categorías a añadir.
+     * @param product Producto al que se añadirán las categorías.
+     */
     @Transactional
     protected void addCategoriesToProduct(List<Long> categoryIds, Product product){
         if (categoryIds == null || categoryIds.isEmpty()) {

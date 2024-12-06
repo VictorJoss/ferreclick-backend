@@ -7,21 +7,36 @@ import org.springframework.security.core.GrantedAuthority;
 
 import java.util.List;
 
+/**
+ * Entidad que representa un rol.
+ */
 @Entity
 @Getter
 @Setter
 public class Role implements GrantedAuthority {
 
+    /**
+     * Identificador del rol.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /**
+     * Nombre del rol.
+     */
     @Enumerated(EnumType.STRING)
     private RoleEnum name;
 
+    /**
+     * Descripción del rol.
+     */
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "role")
     private List<Role_Permission> permissions;
 
+    /**
+     * Lista de usuarios que tienen el rol.
+     */
     @Override
     public String getAuthority() {
         if(name == null){
@@ -30,6 +45,9 @@ public class Role implements GrantedAuthority {
         return "ROLE_" + name.name();
     }
 
+    /**
+     * Enumeración que representa los roles disponibles.
+     */
     public static enum RoleEnum{
         CUSTOMER,
         ADMIN

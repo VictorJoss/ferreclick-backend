@@ -9,9 +9,17 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.stream.Collectors;
 
+/**
+ * Clase que proporciona métodos para convertir entidades en objetos DTO.
+ */
 @Component
 public class DtoConverter {
 
+    /**
+     * Convierte un objeto `Product` en un objeto `ProductResponse`.
+     * @param product Objeto `Product` a convertir.
+     * @return Objeto `ProductResponse` convertido.
+     */
     public ProductResponse getProduct(Product product) {
         ProductResponse productResponse = new ProductResponse();
         productResponse.setId(product.getId());
@@ -25,6 +33,11 @@ public class DtoConverter {
         return productResponse;
     }
 
+    /**
+     * Convierte un objeto `ProductCategory` en un objeto `ProductCategoryBody`.
+     * @param category Objeto `ProductCategory` a convertir.
+     * @return Objeto `ProductCategoryBody` convertido.
+     */
     public ProductCategoryBody getProductCategory(ProductCategory category) {
         ProductCategoryBody productCategoryBody = new ProductCategoryBody();
         productCategoryBody.setId(category.getId());

@@ -6,8 +6,22 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+/**
+ * Repositorio de la entidad `Product`.
+ */
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
+    /**
+     * Obtiene el producto por nombre.
+     * @param id del producto.
+     * @return Objeto `Product` que representa el producto.
+     */
     Optional<Product> findById(Long id);
+
+    /**
+     * Obtiene el producto por nombre.
+     * @param name Nombre del producto.
+     * @return Objeto `Product` que representa el producto.
+     */
     Optional<Product> findByNameIgnoreCase(String name);
 }

@@ -16,6 +16,11 @@ public class FerreclickBackendApplication {
 
     @Configuration
     public static class Myconfiguration{
+
+        /**
+         * Configuración de CORS.
+         * @return Objeto de configuración de CORS.
+         */
         @Bean
         public WebMvcConfigurer corsConfigurer(){
             return new WebMvcConfigurer() {

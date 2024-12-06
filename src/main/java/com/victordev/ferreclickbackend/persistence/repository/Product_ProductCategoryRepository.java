@@ -9,9 +9,17 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+/**
+ * Repositorio de la entidad `Product_ProductCategory`.
+ */
 @Repository
 public interface Product_ProductCategoryRepository extends JpaRepository<Product_ProductCategory, Long> {
 
+    /**
+     * Obtiene los productos por categoría.
+     * @param categoryId Identificador de la categoría.
+     * @return Lista de objetos `Product` que representan los productos de la categoría.
+     */
     @Query("SELECT p.product FROM Product_ProductCategory p WHERE p.category.id = :categoryId")
     List<Product> findProductsByCategoryId(@Param("categoryId") Long categoryId);
     void deleteByProduct_Id(Long id);
