@@ -3,7 +3,9 @@ package com.victordev.ferreclickbackend.service.impl;
 import com.victordev.ferreclickbackend.dto.api.ProductBody;
 import com.victordev.ferreclickbackend.dto.api.ProductResponse;
 import com.victordev.ferreclickbackend.dto.api.UpdateProductBody;
-import com.victordev.ferreclickbackend.exceptions.product.ProductCreationException;
+import com.victordev.ferreclickbackend.exceptions.files.InvalidImageException;
+import com.victordev.ferreclickbackend.exceptions.product.FailedProductCreationException;
+import com.victordev.ferreclickbackend.exceptions.product.ProductAlreadyExistsException;
 import com.victordev.ferreclickbackend.persistence.entity.Product;
 import com.victordev.ferreclickbackend.persistence.entity.ProductCategory;
 import com.victordev.ferreclickbackend.persistence.entity.Product_ProductCategory;
@@ -12,11 +14,13 @@ import com.victordev.ferreclickbackend.service.IProductService;
 import com.victordev.ferreclickbackend.service.ImageService;
 import com.victordev.ferreclickbackend.utils.DtoConverter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -62,16 +66,16 @@ public class ProductServiceImpl implements IProductService {
      * @param productBody Objeto que contiene la información del producto a crear.
      * @return Objeto que contiene la información del producto creado.
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public ProductResponse createProduct(ProductBody productBody) {
 
         Optional<Product> productVerification = productRepository.findByNameIgnoreCase(productBody.getName());
         if(productVerification.isPresent()){
-            throw new RuntimeException("A product already exist with the name: " + productBody.getName());
+            throw new ProductAlreadyExistsException("A product already exists with the name: " + productBody.getName());
         }
 
-        if (productBody.getImage().isEmpty() || !productBody.getImage().getContentType().startsWith("image/")) {
-            throw new IllegalArgumentException("El archivo debe ser una imagen válida.");
+        if (productBody.getImage().isEmpty() || !Objects.requireNonNull(productBody.getImage().getContentType()).startsWith("image/")) {
+            throw new InvalidImageException("The file is not an image");
         }
 
         try{
@@ -85,13 +89,13 @@ public class ProductServiceImpl implements IProductService {
 
             Product savedProduct = productRepository.save(newProduct);
 
-            List<Long> categoryIds = productBody.getCategoryIds();
-
-            addCategoriesToProduct(categoryIds, savedProduct);
+            addCategoriesToProduct(productBody.getCategoryIds(), savedProduct);
 
             return dtoConverter.getProduct(savedProduct);
+        } catch (DataIntegrityViolationException e) {
+            throw new FailedProductCreationException("Data Integrity Error During Product Creation", e);
         } catch (Exception e) {
-            throw new ProductCreationException("Failed to create product", e);
+            throw new FailedProductCreationException("Unexpected Error During Product Creation", e);
         }
     }
 
