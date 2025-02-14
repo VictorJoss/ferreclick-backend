@@ -1,7 +1,9 @@
 package com.victordev.ferreclickbackend.exceptions.handler;
 
+import com.victordev.ferreclickbackend.exceptions.files.InvalidImageException;
 import com.victordev.ferreclickbackend.exceptions.product.CategoryNotFoundException;
-import com.victordev.ferreclickbackend.exceptions.product.ProductCreationException;
+import com.victordev.ferreclickbackend.exceptions.product.FailedProductCreationException;
+import com.victordev.ferreclickbackend.exceptions.product.ProductAlreadyExistsException;
 import com.victordev.ferreclickbackend.exceptions.support.ErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -33,12 +35,31 @@ public class GlobalExceptionHandler {
      * @param ex Excepción de creación de producto.
      * @return Respuesta de error.
      */
-    @ExceptionHandler(ProductCreationException.class)
-    public ResponseEntity<ErrorResponse> handleProductCreationException(ProductCreationException ex){
+    @ExceptionHandler(FailedProductCreationException.class)
+    public ResponseEntity<ErrorResponse> handleProductCreationException(FailedProductCreationException ex){
         ErrorResponse error = new ErrorResponse(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),
                 ex.getMessage()
         );
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
+
+    @ExceptionHandler(ProductAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleProductAlreadyExists(ProductAlreadyExistsException ex) {
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.CONFLICT.value(),
+                ex.getMessage()
+        );
+        return new ResponseEntity<>(error, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(InvalidImageException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidImage(InvalidImageException ex) {
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.BAD_REQUEST.value(),
+                ex.getMessage()
+        );
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
 }
