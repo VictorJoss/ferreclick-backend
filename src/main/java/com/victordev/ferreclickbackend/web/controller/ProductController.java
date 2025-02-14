@@ -60,39 +60,18 @@ public class ProductController {
     /**
      * Crea un nuevo producto.
      *
-     * @param name           Nombre del producto.
-     * @param description    Descripción del producto.
-     * @param price          Precio del producto.
-     * @param categoryIdsJson Identificadores de las categorías del producto.
-     * @param image          Imagen del producto.
      * @return Respuesta HTTP que indica si el producto ha sido creado correctamente.
      */
     @PreAuthorize("hasAuthority('product:create')")
     @PostMapping
-    public ResponseEntity<ProductResponse> createProduct(
-            @RequestParam("name") String name,
-            @RequestParam("description") String description,
-            @RequestParam("price") Double price,
-            @RequestParam("categoryIds") String categoryIdsJson,
-            @RequestParam("image") MultipartFile image) {
+    public ResponseEntity<ProductResponse> createProduct(@ModelAttribute ProductBody productBody) {
 
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            List<Long> categoryIds = objectMapper.readValue(categoryIdsJson, new TypeReference<List<Long>>() {
-            });
-
-            ProductBody productBody = new ProductBody();
-            productBody.setName(name);
-            productBody.setDescription(description);
-            productBody.setPrice(price);
-            productBody.setCategoryIds(categoryIds);
-            productBody.setImage(image);
-
+        try{
             ProductResponse savedProduct = productService.createProduct(productBody);
             return ResponseEntity.ok(savedProduct);
-
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(null);
         }
     }
 
