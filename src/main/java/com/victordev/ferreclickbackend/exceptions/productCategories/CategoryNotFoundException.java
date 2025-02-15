@@ -1,4 +1,4 @@
-package com.victordev.ferreclickbackend.exceptions.product;
+package com.victordev.ferreclickbackend.exceptions.productCategories;
 
 /**
  * Excepción lanzada cuando no se encuentra una categoría.
