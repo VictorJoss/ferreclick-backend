@@ -1,5 +1,8 @@
 package com.victordev.ferreclickbackend.service.impl;
 
+import com.victordev.ferreclickbackend.exceptions.files.DeleteImageException;
+import com.victordev.ferreclickbackend.exceptions.files.ImageUploadException;
+import com.victordev.ferreclickbackend.exceptions.files.InvalidImageException;
 import com.victordev.ferreclickbackend.persistence.entity.Image;
 import com.victordev.ferreclickbackend.persistence.repository.ImageRepository;
 import com.victordev.ferreclickbackend.service.ICloudinaryService;
@@ -7,6 +10,8 @@ import com.victordev.ferreclickbackend.service.ImageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Objects;
 
 /**
  * Implementación del servicio de imágenes que proporciona métodos para subir y borrar imágenes.
@@ -32,20 +37,23 @@ public class ImageServiceImpl implements ImageService {
      */
     @Override
     public String uploadImage(MultipartFile file) {
+
+        if (file.isEmpty() || !Objects.requireNonNull(file.getContentType()).startsWith("image/")) {
+            throw new InvalidImageException("The file is not an image");
+        }
+
         try {
-            if (file.isEmpty()) {
-                throw new RuntimeException("File is empty");
-            }
+
             Image image = new Image();
             image.setUrl(cloudinaryService.uploadFile(file, "ferreclick"));
             String url = image.getUrl();
             if(url == null) {
-                throw new RuntimeException("Error creating image url");
+                throw new ImageUploadException("Error creating image URL");
             }
             imageRepository.save(image);
             return url;
         } catch (Exception e) {
-            throw new RuntimeException("Error uploading image");
+            throw new ImageUploadException("Error uploading image");
         }
     }
 
@@ -57,7 +65,7 @@ public class ImageServiceImpl implements ImageService {
         try {
             cloudinaryService.deleteFile(imageUrl, "ferreclick");
         } catch (Exception e) {
-            throw new RuntimeException("Error deleting image", e);
+            throw new DeleteImageException("Error deleting image");
         }
     }
 }
