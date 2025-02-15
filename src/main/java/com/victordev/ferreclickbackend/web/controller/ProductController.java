@@ -5,11 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.victordev.ferreclickbackend.dto.api.ProductBody;
 import com.victordev.ferreclickbackend.dto.api.ProductResponse;
 import com.victordev.ferreclickbackend.dto.api.UpdateProductBody;
-import com.victordev.ferreclickbackend.persistence.entity.Product;
-import com.victordev.ferreclickbackend.persistence.repository.CartItemRepository;
-import com.victordev.ferreclickbackend.persistence.repository.ProductRepository;
 import com.victordev.ferreclickbackend.service.IProductService;
-import com.victordev.ferreclickbackend.service.ImageService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -66,13 +62,8 @@ public class ProductController {
     @PostMapping
     public ResponseEntity<ProductResponse> createProduct(@ModelAttribute ProductBody productBody) {
 
-        try{
             ProductResponse savedProduct = productService.createProduct(productBody);
             return ResponseEntity.ok(savedProduct);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(null);
-        }
     }
 
     /**
@@ -95,43 +86,14 @@ public class ProductController {
     /**
      * Actualiza un producto.
      *
-     * @param productId      Identificador del producto.
-     * @param name           Nombre del producto.
-     * @param description    Descripción del producto.
-     * @param price          Precio del producto.
-     * @param categoryIdsJson Identificadores de las categorías del producto.
-     * @param image          Imagen del producto.
      * @return Respuesta HTTP que indica si el producto ha sido actualizado correctamente.
      */
     @PreAuthorize("hasAuthority('product:update')")
     @PutMapping
-    public ResponseEntity<ProductResponse> UpdateProduct(
-            @RequestParam(value = "productId", required = true) Long productId,
-            @RequestParam("name") String name,
-            @RequestParam("description") String description,
-            @RequestParam("price") Double price,
-            @RequestParam("categoryIds") String categoryIdsJson,
-            @RequestParam(value = "image", required = false) MultipartFile image) {
-
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            List<Long> categoryIds = objectMapper.readValue(categoryIdsJson, new TypeReference<List<Long>>() {
-            });
-
-            UpdateProductBody updateProductBody = new UpdateProductBody();
-            updateProductBody.setId(productId);
-            updateProductBody.setName(name);
-            updateProductBody.setDescription(description);
-            updateProductBody.setPrice(price);
-            updateProductBody.setCategoryIds(categoryIds);
-            updateProductBody.setImage(image);
+    public ResponseEntity<ProductResponse> UpdateProduct(@ModelAttribute UpdateProductBody updateProductBody) {
 
             ProductResponse savedProduct = productService.updateProduct(updateProductBody);
             return ResponseEntity.ok(savedProduct);
-
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
     }
 
     /**

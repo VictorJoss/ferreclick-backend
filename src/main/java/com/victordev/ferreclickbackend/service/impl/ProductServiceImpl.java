@@ -3,9 +3,11 @@ package com.victordev.ferreclickbackend.service.impl;
 import com.victordev.ferreclickbackend.dto.api.ProductBody;
 import com.victordev.ferreclickbackend.dto.api.ProductResponse;
 import com.victordev.ferreclickbackend.dto.api.UpdateProductBody;
-import com.victordev.ferreclickbackend.exceptions.files.InvalidImageException;
 import com.victordev.ferreclickbackend.exceptions.product.FailedProductCreationException;
 import com.victordev.ferreclickbackend.exceptions.product.ProductAlreadyExistsException;
+import com.victordev.ferreclickbackend.exceptions.product.ProductNotExistExeption;
+import com.victordev.ferreclickbackend.exceptions.productCategories.AddCategoriesToProductException;
+import com.victordev.ferreclickbackend.exceptions.productCategories.CategoryNotFoundException;
 import com.victordev.ferreclickbackend.persistence.entity.Product;
 import com.victordev.ferreclickbackend.persistence.entity.ProductCategory;
 import com.victordev.ferreclickbackend.persistence.entity.Product_ProductCategory;
@@ -20,7 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -74,18 +75,11 @@ public class ProductServiceImpl implements IProductService {
             throw new ProductAlreadyExistsException("A product already exists with the name: " + productBody.getName());
         }
 
-        if (productBody.getImage().isEmpty() || !Objects.requireNonNull(productBody.getImage().getContentType()).startsWith("image/")) {
-            throw new InvalidImageException("The file is not an image");
-        }
-
         try{
-            Product newProduct = new Product();
-            newProduct.setName(productBody.getName());
-            newProduct.setDescription(productBody.getDescription());
-            newProduct.setPrice(productBody.getPrice());
-            newProduct.setImage(
-                    imageService.uploadImage(productBody.getImage())
-            );
+
+            String imageUrl = imageService.uploadImage(productBody.getImage());
+
+            Product newProduct = new Product(productBody.getName(), productBody.getDescription(), productBody.getPrice(), imageUrl);
 
             Product savedProduct = productRepository.save(newProduct);
 
@@ -137,12 +131,13 @@ public class ProductServiceImpl implements IProductService {
     public ProductResponse updateProduct(UpdateProductBody updateProductBody) {
 
         Product existingProduct = productRepository.findById(updateProductBody.getId())
-                .orElseThrow(() -> new RuntimeException("Product not found with id: " + updateProductBody.getId()));
+                .orElseThrow(() -> new ProductNotExistExeption("Product not found with id: " + updateProductBody.getId()));
 
         existingProduct.setName(updateProductBody.getName());
         existingProduct.setDescription(updateProductBody.getDescription());
         existingProduct.setPrice(updateProductBody.getPrice());
         existingProduct.setCategories(new ArrayList<>());
+
         productProductCategoryRepository.deleteByProduct_Id(existingProduct.getId());
 
         if(updateProductBody.getImage() != null && !updateProductBody.getImage().isEmpty()){
@@ -151,7 +146,10 @@ public class ProductServiceImpl implements IProductService {
         }
 
         List<Long> categoryIds = updateProductBody.getCategoryIds();
-        addCategoriesToProduct(categoryIds, existingProduct);
+
+        if(categoryIds != null && !categoryIds.isEmpty()) {
+            addCategoriesToProduct(categoryIds, existingProduct);
+        }
 
         Product savedProduct = productRepository.save(existingProduct);
         return dtoConverter.getProduct(savedProduct);
@@ -181,18 +179,19 @@ public class ProductServiceImpl implements IProductService {
      */
     @Transactional
     protected void addCategoriesToProduct(List<Long> categoryIds, Product product){
-        if (categoryIds == null || categoryIds.isEmpty()) {
-            throw new RuntimeException("Categories is null or empty");
-        }
+        try {
             List<Product_ProductCategory> productCategories = categoryIds.stream()
                     .map(categoryId -> {
                         ProductCategory category = categoryRepository.findById(categoryId)
-                                .orElseThrow(() -> new RuntimeException("Category not found with id " + categoryId));
+                                .orElseThrow(() -> new CategoryNotFoundException("Category not found with id: " + categoryId));
                         return new Product_ProductCategory(product, category);
                     })
                     .collect(Collectors.toList());
 
             productProductCategoryRepository.saveAll(productCategories);
             product.setCategories(productCategories);
+        }catch (Exception e){
+            throw new AddCategoriesToProductException("Error adding categories to product", e);
+        }
     }
 }
