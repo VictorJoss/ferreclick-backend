@@ -3,7 +3,9 @@ package com.victordev.ferreclickbackend.persistence.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
@@ -14,6 +16,7 @@ import java.util.List;
 @Entity
 @Getter
 @Setter
+@NoArgsConstructor
 public class Product {
 
     /**
@@ -45,4 +48,11 @@ public class Product {
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "product", cascade = CascadeType.REMOVE)
     @JsonIgnore
     private List<Product_ProductCategory> categories;
+
+    public Product(String name, String description, Double price, String image) {
+        this.name = name;
+        this.description = description;
+        this.price = price;
+        this.image = image;
+    }
 }
