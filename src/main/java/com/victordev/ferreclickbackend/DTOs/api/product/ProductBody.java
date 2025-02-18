@@ -1,9 +1,6 @@
-package com.victordev.ferreclickbackend.dto.api;
+package com.victordev.ferreclickbackend.DTOs.api.product;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,14 +12,8 @@ import java.util.List;
  */
 @Getter
 @Setter
-public class UpdateProductBody {
+public class ProductBody {
 
-    /**
-     * Identificador del producto.
-     */
-    @NotNull
-    @NotBlank
-    private Long id;
     /**
      * Nombre del producto.
      */
@@ -40,17 +31,17 @@ public class UpdateProductBody {
      * Imagen del producto.
      */
     @NotNull
-    @NotBlank
     private MultipartFile image;
     /**
      * Precio del producto.
      */
     @NotNull
-    @NotBlank
     @Positive
     private Double price;
     /**
      * Lista de identificadores de las categorías a las que pertenece el producto.
      */
+    @NotNull
+    @NotEmpty
     private List<Long> categoryIds;
 }

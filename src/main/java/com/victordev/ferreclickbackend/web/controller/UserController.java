@@ -1,6 +1,6 @@
 package com.victordev.ferreclickbackend.web.controller;
 
-import com.victordev.ferreclickbackend.dto.api.UserDto;
+import com.victordev.ferreclickbackend.DTOs.api.user.UserDto;
 import com.victordev.ferreclickbackend.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

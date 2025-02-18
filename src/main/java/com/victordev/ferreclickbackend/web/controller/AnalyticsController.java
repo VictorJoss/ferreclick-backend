@@ -1,8 +1,8 @@
 package com.victordev.ferreclickbackend.web.controller;
 
-import com.victordev.ferreclickbackend.dto.api.CategoryDistributionDto;
-import com.victordev.ferreclickbackend.dto.api.MonthlyRevenueDto;
-import com.victordev.ferreclickbackend.dto.api.TopProductDto;
+import com.victordev.ferreclickbackend.DTOs.api.analytics.CategoryDistributionDto;
+import com.victordev.ferreclickbackend.DTOs.api.analytics.MonthlyRevenueDto;
+import com.victordev.ferreclickbackend.DTOs.api.analytics.TopProductDto;
 import com.victordev.ferreclickbackend.service.IAnalyticsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;

@@ -1,4 +1,4 @@
-package com.victordev.ferreclickbackend.dto.api;
+package com.victordev.ferreclickbackend.DTOs.api.user;
 
 import lombok.Getter;
 import lombok.Setter;

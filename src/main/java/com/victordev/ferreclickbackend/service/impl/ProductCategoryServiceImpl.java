@@ -1,6 +1,6 @@
 package com.victordev.ferreclickbackend.service.impl;
 
-import com.victordev.ferreclickbackend.dto.api.ProductCategoryBody;
+import com.victordev.ferreclickbackend.DTOs.api.productCategory.ProductCategoryBody;
 import com.victordev.ferreclickbackend.persistence.entity.Product;
 import com.victordev.ferreclickbackend.persistence.entity.ProductCategory;
 import com.victordev.ferreclickbackend.persistence.entity.Product_ProductCategory;

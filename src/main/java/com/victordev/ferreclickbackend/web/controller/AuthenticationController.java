@@ -1,8 +1,8 @@
 package com.victordev.ferreclickbackend.web.controller;
 
-import com.victordev.ferreclickbackend.dto.api.RegistrationBody;
-import com.victordev.ferreclickbackend.dto.security.LoginRequest;
-import com.victordev.ferreclickbackend.dto.security.LoginResponse;
+import com.victordev.ferreclickbackend.DTOs.api.user.RegistrationBody;
+import com.victordev.ferreclickbackend.DTOs.security.LoginRequest;
+import com.victordev.ferreclickbackend.DTOs.security.LoginResponse;
 import com.victordev.ferreclickbackend.exceptions.user.UserAlreadyExistsException;
 import com.victordev.ferreclickbackend.service.IUserService;
 import jakarta.validation.Valid;
@@ -36,6 +36,7 @@ public class AuthenticationController {
     @PreAuthorize("permitAll()")
     @PostMapping("/register")
     public ResponseEntity registerUser(@RequestBody @Valid RegistrationBody registrationBody) {
+
         try{
             userService.registerUser(registrationBody);
             return ResponseEntity.ok().build();

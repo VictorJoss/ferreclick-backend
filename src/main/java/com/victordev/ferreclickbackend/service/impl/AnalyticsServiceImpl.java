@@ -3,6 +3,8 @@ package com.victordev.ferreclickbackend.service.impl;
 import com.victordev.ferreclickbackend.dto.api.CategoryDistributionDto;
 import com.victordev.ferreclickbackend.dto.api.MonthlyRevenueDto;
 import com.victordev.ferreclickbackend.dto.api.TopProductDto;
+import com.victordev.ferreclickbackend.DTOs.api.analytics.MonthlyRevenueDto;
+import com.victordev.ferreclickbackend.DTOs.api.analytics.TopProductDto;
 import com.victordev.ferreclickbackend.persistence.repository.AnalyticsRepository;
 import com.victordev.ferreclickbackend.service.IAnalyticsService;
 import org.springframework.beans.factory.annotation.Autowired;

@@ -1,14 +1,13 @@
 package com.victordev.ferreclickbackend.service.impl;
 
-import com.victordev.ferreclickbackend.dto.api.RegistrationBody;
-import com.victordev.ferreclickbackend.dto.api.UserDto;
-import com.victordev.ferreclickbackend.dto.security.LoginRequest;
-import com.victordev.ferreclickbackend.dto.security.LoginResponse;
+import com.victordev.ferreclickbackend.DTOs.api.user.RegistrationBody;
+import com.victordev.ferreclickbackend.DTOs.api.user.UserDto;
+import com.victordev.ferreclickbackend.DTOs.security.LoginRequest;
+import com.victordev.ferreclickbackend.DTOs.security.LoginResponse;
 import com.victordev.ferreclickbackend.exceptions.user.UserAlreadyExistsException;
 import com.victordev.ferreclickbackend.persistence.entity.Cart;
 import com.victordev.ferreclickbackend.persistence.entity.Role;
 import com.victordev.ferreclickbackend.persistence.entity.User;
-import com.victordev.ferreclickbackend.persistence.repository.CartRepository;
 import com.victordev.ferreclickbackend.persistence.repository.RoleRepository;
 import com.victordev.ferreclickbackend.persistence.repository.UserRepository;
 import com.victordev.ferreclickbackend.service.ICartService;

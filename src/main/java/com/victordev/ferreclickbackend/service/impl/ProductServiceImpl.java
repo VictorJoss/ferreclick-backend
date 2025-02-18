@@ -3,6 +3,9 @@ package com.victordev.ferreclickbackend.service.impl;
 import com.victordev.ferreclickbackend.dto.api.ProductBody;
 import com.victordev.ferreclickbackend.dto.api.ProductResponse;
 import com.victordev.ferreclickbackend.dto.api.UpdateProductBody;
+import com.victordev.ferreclickbackend.DTOs.api.product.ProductBody;
+import com.victordev.ferreclickbackend.DTOs.api.product.ProductResponse;
+import com.victordev.ferreclickbackend.DTOs.api.product.UpdateProductBody;
 import com.victordev.ferreclickbackend.exceptions.product.FailedProductCreationException;
 import com.victordev.ferreclickbackend.exceptions.product.ProductAlreadyExistsException;
 import com.victordev.ferreclickbackend.exceptions.product.ProductNotExistExeption;
@@ -75,10 +78,9 @@ public class ProductServiceImpl implements IProductService {
             throw new ProductAlreadyExistsException("A product already exists with the name: " + productBody.getName());
         }
 
+        String imageUrl = imageService.uploadImage(productBody.getImage());
+
         try{
-
-            String imageUrl = imageService.uploadImage(productBody.getImage());
-
             Product newProduct = new Product(productBody.getName(), productBody.getDescription(), productBody.getPrice(), imageUrl);
 
             Product savedProduct = productRepository.save(newProduct);

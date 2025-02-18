@@ -1,9 +1,10 @@
 package com.victordev.ferreclickbackend.web.controller;
 
-import com.victordev.ferreclickbackend.dto.api.AddToCartRequest;
-import com.victordev.ferreclickbackend.dto.api.AddedToCartResponse;
-import com.victordev.ferreclickbackend.dto.api.CartResponse;
+import com.victordev.ferreclickbackend.DTOs.api.cart.AddToCartRequest;
+import com.victordev.ferreclickbackend.DTOs.api.cart.AddedToCartResponse;
+import com.victordev.ferreclickbackend.DTOs.api.cart.CartResponse;
 import com.victordev.ferreclickbackend.service.ICartService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -29,7 +30,7 @@ public class CartController {
      */
     @PreAuthorize("hasAuthority('cart:add-product')")
     @PostMapping("/add-product")
-    public ResponseEntity<AddedToCartResponse> addProductToCart(@RequestBody AddToCartRequest addToCartRequest){
+    public ResponseEntity<AddedToCartResponse> addProductToCart(@RequestBody @Valid AddToCartRequest addToCartRequest){
         return ResponseEntity.ok(cartService.addProductToCart(addToCartRequest));
     }
 

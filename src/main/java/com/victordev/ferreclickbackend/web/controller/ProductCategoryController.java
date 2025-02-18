@@ -1,7 +1,8 @@
 package com.victordev.ferreclickbackend.web.controller;
 
-import com.victordev.ferreclickbackend.dto.api.ProductCategoryBody;
+import com.victordev.ferreclickbackend.DTOs.api.productCategory.ProductCategoryBody;
 import com.victordev.ferreclickbackend.service.IProductCategoryService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -53,7 +54,7 @@ public class ProductCategoryController {
      */
     @PreAuthorize("hasAuthority('category:create')")
     @PostMapping
-    public ResponseEntity<ProductCategoryBody> createProductCategory(@RequestBody ProductCategoryBody productCategoryBody) {
+    public ResponseEntity<ProductCategoryBody> createProductCategory(@RequestBody @Valid ProductCategoryBody productCategoryBody) {
         ProductCategoryBody createdCategory = productCategoryService.createCategory(productCategoryBody);
         URI location = URI.create("/api/product-categories" + createdCategory.getId());
         return ResponseEntity.created(location).build();
@@ -66,7 +67,7 @@ public class ProductCategoryController {
      */
     @PreAuthorize("hasAuthority('category:update')")
     @PutMapping
-    public ResponseEntity<ProductCategoryBody> updateCategory(@RequestBody ProductCategoryBody categoryBody){
+    public ResponseEntity<ProductCategoryBody> updateCategory(@RequestBody @Valid ProductCategoryBody categoryBody){
         return ResponseEntity.ok(productCategoryService.updateCategory(categoryBody));
     }
 

@@ -1,8 +1,8 @@
 package com.victordev.ferreclickbackend.service.impl;
 
-import com.victordev.ferreclickbackend.dto.api.AddToCartRequest;
-import com.victordev.ferreclickbackend.dto.api.AddedToCartResponse;
-import com.victordev.ferreclickbackend.dto.api.CartResponse;
+import com.victordev.ferreclickbackend.DTOs.api.cart.AddToCartRequest;
+import com.victordev.ferreclickbackend.DTOs.api.cart.AddedToCartResponse;
+import com.victordev.ferreclickbackend.DTOs.api.cart.CartResponse;
 import com.victordev.ferreclickbackend.persistence.entity.Cart;
 import com.victordev.ferreclickbackend.persistence.entity.CartItem;
 import com.victordev.ferreclickbackend.persistence.entity.Product;

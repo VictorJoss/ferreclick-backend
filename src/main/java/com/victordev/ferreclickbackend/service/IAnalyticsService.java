@@ -1,8 +1,8 @@
 package com.victordev.ferreclickbackend.service;
 
-import com.victordev.ferreclickbackend.dto.api.CategoryDistributionDto;
-import com.victordev.ferreclickbackend.dto.api.MonthlyRevenueDto;
-import com.victordev.ferreclickbackend.dto.api.TopProductDto;
+import com.victordev.ferreclickbackend.DTOs.api.analytics.CategoryDistributionDto;
+import com.victordev.ferreclickbackend.DTOs.api.analytics.MonthlyRevenueDto;
+import com.victordev.ferreclickbackend.DTOs.api.analytics.TopProductDto;
 
 import java.util.List;
 

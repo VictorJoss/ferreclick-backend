@@ -1,9 +1,9 @@
 package com.victordev.ferreclickbackend.service;
 
-import com.victordev.ferreclickbackend.dto.api.RegistrationBody;
-import com.victordev.ferreclickbackend.dto.api.UserDto;
-import com.victordev.ferreclickbackend.dto.security.LoginRequest;
-import com.victordev.ferreclickbackend.dto.security.LoginResponse;
+import com.victordev.ferreclickbackend.DTOs.api.user.RegistrationBody;
+import com.victordev.ferreclickbackend.DTOs.api.user.UserDto;
+import com.victordev.ferreclickbackend.DTOs.security.LoginRequest;
+import com.victordev.ferreclickbackend.DTOs.security.LoginResponse;
 import com.victordev.ferreclickbackend.exceptions.user.UserAlreadyExistsException;
 import com.victordev.ferreclickbackend.persistence.entity.User;
 

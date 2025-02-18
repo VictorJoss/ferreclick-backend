@@ -1,4 +1,4 @@
-package com.victordev.ferreclickbackend.dto.security;
+package com.victordev.ferreclickbackend.DTOs.security;
 
 /**
  * Objeto que contiene la información de la respuesta de inicio de sesión.

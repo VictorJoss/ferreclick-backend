@@ -1,6 +1,6 @@
 package com.victordev.ferreclickbackend.service;
 
-import com.victordev.ferreclickbackend.dto.api.ProductCategoryBody;
+import com.victordev.ferreclickbackend.DTOs.api.productCategory.ProductCategoryBody;
 
 import java.util.List;
 import java.util.Optional;

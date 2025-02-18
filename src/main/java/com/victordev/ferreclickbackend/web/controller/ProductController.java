@@ -1,17 +1,14 @@
 package com.victordev.ferreclickbackend.web.controller;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.victordev.ferreclickbackend.dto.api.ProductBody;
-import com.victordev.ferreclickbackend.dto.api.ProductResponse;
-import com.victordev.ferreclickbackend.dto.api.UpdateProductBody;
+import com.victordev.ferreclickbackend.DTOs.api.product.ProductBody;
+import com.victordev.ferreclickbackend.DTOs.api.product.ProductResponse;
+import com.victordev.ferreclickbackend.DTOs.api.product.UpdateProductBody;
 import com.victordev.ferreclickbackend.service.IProductService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -60,7 +57,7 @@ public class ProductController {
      */
     @PreAuthorize("hasAuthority('product:create')")
     @PostMapping
-    public ResponseEntity<ProductResponse> createProduct(@ModelAttribute ProductBody productBody) {
+    public ResponseEntity<ProductResponse> createProduct(@ModelAttribute @Valid ProductBody productBody) {
 
             ProductResponse savedProduct = productService.createProduct(productBody);
             return ResponseEntity.ok(savedProduct);
@@ -90,7 +87,7 @@ public class ProductController {
      */
     @PreAuthorize("hasAuthority('product:update')")
     @PutMapping
-    public ResponseEntity<ProductResponse> UpdateProduct(@ModelAttribute UpdateProductBody updateProductBody) {
+    public ResponseEntity<ProductResponse> UpdateProduct(@ModelAttribute @Valid UpdateProductBody updateProductBody) {
 
             ProductResponse savedProduct = productService.updateProduct(updateProductBody);
             return ResponseEntity.ok(savedProduct);

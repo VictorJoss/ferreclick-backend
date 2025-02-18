@@ -39,7 +39,7 @@ public class ImageServiceImpl implements ImageService {
     public String uploadImage(MultipartFile file) {
 
         if (file.isEmpty() || !Objects.requireNonNull(file.getContentType()).startsWith("image/")) {
-            throw new InvalidImageException("The file is not an image");
+            throw new InvalidImageException("The file is empty or not an image");
         }
 
         try {
