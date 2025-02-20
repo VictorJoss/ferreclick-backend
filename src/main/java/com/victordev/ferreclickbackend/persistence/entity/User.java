@@ -50,7 +50,7 @@ public class User implements UserDetails {
     /**
      * Carritos del usuario.
      */
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "user")
+    @OneToMany(mappedBy = "user", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Cart> carts;
     /**
      * Indica si la cuenta del usuario ha expirado.

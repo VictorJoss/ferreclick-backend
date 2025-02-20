@@ -18,7 +18,6 @@ public class ProductCategoryBody {
     /**
      * Identificador de la categoría.
      */
-    @NotNull
     @Positive
     private Long id;
     /**

@@ -24,11 +24,4 @@ public interface UserRepository extends JpaRepository<User, Long> {
      * @return Objeto `User` que representa el usuario.
      */
     Optional<User> findByUsernameIgnoreCase(String username);
-
-    /**
-     * Obtiene el usuario por id.
-     * @param id Identificador del usuario.
-     * @return Objeto `User` que representa el usuario.
-     */
-    Optional<User> findById(Long id);
 }

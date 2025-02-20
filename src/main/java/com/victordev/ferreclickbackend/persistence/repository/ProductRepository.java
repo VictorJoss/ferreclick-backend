@@ -11,12 +11,6 @@ import java.util.Optional;
  */
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Long> {
-    /**
-     * Obtiene el producto por nombre.
-     * @param id del producto.
-     * @return Objeto `Product` que representa el producto.
-     */
-    Optional<Product> findById(Long id);
 
     /**
      * Obtiene el producto por nombre.

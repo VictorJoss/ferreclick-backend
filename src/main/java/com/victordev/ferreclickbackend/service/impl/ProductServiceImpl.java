@@ -1,14 +1,11 @@
 package com.victordev.ferreclickbackend.service.impl;
 
-import com.victordev.ferreclickbackend.dto.api.ProductBody;
-import com.victordev.ferreclickbackend.dto.api.ProductResponse;
-import com.victordev.ferreclickbackend.dto.api.UpdateProductBody;
 import com.victordev.ferreclickbackend.DTOs.api.product.ProductBody;
 import com.victordev.ferreclickbackend.DTOs.api.product.ProductResponse;
 import com.victordev.ferreclickbackend.DTOs.api.product.UpdateProductBody;
 import com.victordev.ferreclickbackend.exceptions.product.FailedProductCreationException;
 import com.victordev.ferreclickbackend.exceptions.product.ProductAlreadyExistsException;
-import com.victordev.ferreclickbackend.exceptions.product.ProductNotExistExeption;
+import com.victordev.ferreclickbackend.exceptions.product.ProductNotExistException;
 import com.victordev.ferreclickbackend.exceptions.productCategories.AddCategoriesToProductException;
 import com.victordev.ferreclickbackend.exceptions.productCategories.CategoryNotFoundException;
 import com.victordev.ferreclickbackend.persistence.entity.Product;
@@ -18,7 +15,7 @@ import com.victordev.ferreclickbackend.persistence.repository.*;
 import com.victordev.ferreclickbackend.service.IProductService;
 import com.victordev.ferreclickbackend.service.ImageService;
 import com.victordev.ferreclickbackend.utils.DtoConverter;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,38 +29,26 @@ import java.util.stream.Collectors;
  * Implementación del servicio de productos que proporciona métodos para crear, obtener, actualizar y eliminar productos.
  */
 @Service
+@RequiredArgsConstructor
 public class ProductServiceImpl implements IProductService {
 
     /**
      * Repositorio de productos.
      */
-    @Autowired
-    private ProductRepository productRepository;
+    private final ProductRepository productRepository;
     /**
      * Repositorio de categorías de productos.
      */
-    @Autowired
-    private ProductCategoryRepository categoryRepository;
-    /**
-     * Repositorio de productos en categorías.
-     */
-    @Autowired
-    private Product_ProductCategoryRepository productProductCategoryRepository;
+    private final ProductCategoryRepository categoryRepository;
     /**
      * Conversor de DTO.
      */
-    @Autowired
-    private DtoConverter dtoConverter;
+    private final DtoConverter dtoConverter;
     /**
      * Repositorio de categorías de productos.
      */
-    @Autowired
-    private ImageService imageService;
-    /**
-     * Repositorio de categorías de productos.
-     */
-    @Autowired
-    private CartItemRepository cartItemRepository;
+    private final ImageService imageService;
+
 
     /**
      * Crea un nuevo producto.
@@ -118,10 +103,11 @@ public class ProductServiceImpl implements IProductService {
      * @return Lista de objetos `ProductResponse` que representan los productos de la categoría.
      */
     public List<ProductResponse> getProductsByCategory(Long categoryId) {
-        List<Product> products = productProductCategoryRepository.findProductsByCategoryId(categoryId);
-        return products.stream()
-                .map(dtoConverter::getProduct)
-                .collect(Collectors.toList());
+        Optional<ProductCategory> category = categoryRepository.findById(categoryId);
+        return category.map(productCategory -> productCategory.getProducts().stream()
+                .map(product_productCategory -> dtoConverter.getProduct(product_productCategory.getProduct()))
+                .toList()).orElseGet(ArrayList::new);
+
     }
 
     /**
@@ -132,29 +118,26 @@ public class ProductServiceImpl implements IProductService {
     @Transactional
     public ProductResponse updateProduct(UpdateProductBody updateProductBody) {
 
-        Product existingProduct = productRepository.findById(updateProductBody.getId())
-                .orElseThrow(() -> new ProductNotExistExeption("Product not found with id: " + updateProductBody.getId()));
+        Optional<Product> existingProduct = productRepository.findById(updateProductBody.getId());
 
-        existingProduct.setName(updateProductBody.getName());
-        existingProduct.setDescription(updateProductBody.getDescription());
-        existingProduct.setPrice(updateProductBody.getPrice());
-        existingProduct.setCategories(new ArrayList<>());
+        if(existingProduct.isEmpty()){
+            throw new ProductNotExistException("Product not found with id: " + updateProductBody.getId());
+        }
 
-        productProductCategoryRepository.deleteByProduct_Id(existingProduct.getId());
+        existingProduct.get().setName(updateProductBody.getName());
+        existingProduct.get().setDescription(updateProductBody.getDescription());
+        existingProduct.get().setPrice(updateProductBody.getPrice());
 
         if(updateProductBody.getImage() != null && !updateProductBody.getImage().isEmpty()){
-            imageService.deleteImage(existingProduct.getImage());
-            existingProduct.setImage(imageService.uploadImage(updateProductBody.getImage()));
+            imageService.deleteImage(existingProduct.get().getImage());
+            existingProduct.get().setImage(imageService.uploadImage(updateProductBody.getImage()));
         }
 
-        List<Long> categoryIds = updateProductBody.getCategoryIds();
-
-        if(categoryIds != null && !categoryIds.isEmpty()) {
-            addCategoriesToProduct(categoryIds, existingProduct);
+        if(updateProductBody.getCategoryIds() != null && !updateProductBody.getCategoryIds().isEmpty()) {
+            addCategoriesToProduct(updateProductBody.getCategoryIds(), existingProduct.get());
         }
 
-        Product savedProduct = productRepository.save(existingProduct);
-        return dtoConverter.getProduct(savedProduct);
+        return dtoConverter.getProduct(existingProduct.get());
     }
 
     /**
@@ -166,7 +149,6 @@ public class ProductServiceImpl implements IProductService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + productId));
         try {
-            cartItemRepository.deleteByProduct_Id(product.getId());
             productRepository.deleteById(product.getId());
             imageService.deleteImage(product.getImage());
         } catch (Exception e) {
@@ -188,10 +170,10 @@ public class ProductServiceImpl implements IProductService {
                                 .orElseThrow(() -> new CategoryNotFoundException("Category not found with id: " + categoryId));
                         return new Product_ProductCategory(product, category);
                     })
-                    .collect(Collectors.toList());
+                    .toList();
 
-            productProductCategoryRepository.saveAll(productCategories);
-            product.setCategories(productCategories);
+            product.getCategories().clear();
+            product.getCategories().addAll(productCategories);
         }catch (Exception e){
             throw new AddCategoriesToProductException("Error adding categories to product", e);
         }

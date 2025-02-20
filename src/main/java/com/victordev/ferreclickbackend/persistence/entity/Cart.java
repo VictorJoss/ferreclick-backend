@@ -30,7 +30,7 @@ public class Cart {
     /**
      * Lista de productos que contiene el carrito.
      */
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "cart")
+    @OneToMany(mappedBy = "cart", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<CartItem> items;
     /**
      * Fecha y hora en la que se creó el carrito.

@@ -31,7 +31,7 @@ public class Role implements GrantedAuthority {
     /**
      * Descripción del rol.
      */
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "role")
+    @OneToMany(mappedBy = "role", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<Role_Permission> permissions;
 
     /**

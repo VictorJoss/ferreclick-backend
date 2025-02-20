@@ -6,13 +6,13 @@ import com.victordev.ferreclickbackend.persistence.entity.ProductCategory;
 import com.victordev.ferreclickbackend.persistence.entity.Product_ProductCategory;
 import com.victordev.ferreclickbackend.persistence.repository.ProductCategoryRepository;
 import com.victordev.ferreclickbackend.persistence.repository.ProductRepository;
-import com.victordev.ferreclickbackend.persistence.repository.Product_ProductCategoryRepository;
 import com.victordev.ferreclickbackend.service.IProductCategoryService;
 import com.victordev.ferreclickbackend.utils.DtoConverter;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -22,33 +22,21 @@ import java.util.stream.Collectors;
  * eliminar categorías de productos.
  */
 @Service
+@RequiredArgsConstructor
 public class ProductCategoryServiceImpl implements IProductCategoryService {
 
     /**
      * Repositorio de categorías de productos.
      */
-    @Autowired
-    private ProductCategoryRepository categoryRepository;
+    private final ProductCategoryRepository categoryRepository;
     /**
      * Repositorio de productos.
      */
-    @Autowired
-    private ProductRepository productRepository;
-    /**
-     * Repositorio de productos en categorías.
-     */
-    @Autowired
-    private Product_ProductCategoryRepository productProductCategoryRepository;
+    private final ProductRepository productRepository;
     /**
      * Conversor de DTO.
      */
-    @Autowired
-    private DtoConverter dtoConverter;
-    /**
-     * Repositorio de categorías de productos.
-     */
-    @Autowired
-    private ProductCategoryRepository productCategoryRepository;
+    private final DtoConverter dtoConverter;
 
     /**
      * Crea una nueva categoría de productos.
@@ -58,7 +46,7 @@ public class ProductCategoryServiceImpl implements IProductCategoryService {
     @Transactional
     public ProductCategoryBody createCategory(ProductCategoryBody categoryBody) {
 
-        Optional<ProductCategory> categoryVerification = productCategoryRepository.findByNameIgnoreCase(categoryBody.getName());
+        Optional<ProductCategory> categoryVerification = categoryRepository.findByNameIgnoreCase(categoryBody.getName());
         if(categoryVerification.isPresent()){
             throw new RuntimeException("A category already exist with the name: " + categoryBody.getName());
         }
@@ -67,12 +55,11 @@ public class ProductCategoryServiceImpl implements IProductCategoryService {
             ProductCategory newCategory = new ProductCategory();
             newCategory.setName(categoryBody.getName());
             newCategory.setDescription(categoryBody.getDescription());
+            newCategory.setProducts(new ArrayList<>());
 
             ProductCategory savedCategory = categoryRepository.save(newCategory);
 
-            List<Long> productIds = categoryBody.getProductIds();
-
-            addProductsToCategory(productIds, savedCategory);
+            addProductsToCategory(categoryBody.getProductIds(), savedCategory);
 
             return dtoConverter.getProductCategory(savedCategory);
         }catch (Exception e){
@@ -100,17 +87,14 @@ public class ProductCategoryServiceImpl implements IProductCategoryService {
     @Transactional
     public ProductCategoryBody updateCategory(ProductCategoryBody categoryBody) {
 
-        ProductCategory existingCategory = productCategoryRepository.findById(categoryBody.getId())
+        ProductCategory existingCategory = categoryRepository.findById(categoryBody.getId())
                 .orElseThrow(() -> new RuntimeException("Category not found with id: " + categoryBody.getId()));
 
         existingCategory.setName(categoryBody.getName());
         existingCategory.setDescription(categoryBody.getDescription());
 
-        List<Long> productIds = categoryBody.getProductIds();
-        addProductsToCategory(productIds, existingCategory);
-
-        ProductCategory savedCategory = productCategoryRepository.save(existingCategory);
-        return dtoConverter.getProductCategory(savedCategory);
+        addProductsToCategory(categoryBody.getProductIds(), existingCategory);
+        return dtoConverter.getProductCategory(existingCategory);
     }
 
     /**
@@ -119,10 +103,10 @@ public class ProductCategoryServiceImpl implements IProductCategoryService {
      */
     @Transactional
     public void deleteCategory(Long categoryId){
-        ProductCategory category = productCategoryRepository.findById(categoryId)
+        ProductCategory category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new RuntimeException("Product not found with id: " + categoryId));
         try {
-            productCategoryRepository.deleteById(category.getId());
+            categoryRepository.deleteById(category.getId());
         } catch (Exception e) {
             throw new RuntimeException("Failed to delete category with id: " + categoryId, e);
         }
@@ -143,10 +127,11 @@ public class ProductCategoryServiceImpl implements IProductCategoryService {
                                 .orElseThrow(() -> new RuntimeException("product not found with id " + productId));
                         return new Product_ProductCategory(product, category);
                     })
-                    .collect(Collectors.toList());
+                    .toList();
 
-            productProductCategoryRepository.saveAll(products);
-            category.setProducts(products);
+            category.getProducts().clear();
+            category.getProducts().addAll(products);
         }
+        category.getProducts().clear();
     }
 }

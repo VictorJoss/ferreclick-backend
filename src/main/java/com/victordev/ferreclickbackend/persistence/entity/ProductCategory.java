@@ -31,6 +31,6 @@ public class ProductCategory {
     /**
      * Productos que pertenecen a la categoría.
      */
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "category", cascade = CascadeType.REMOVE)
+    @OneToMany( mappedBy = "category", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Product_ProductCategory> products;
 }

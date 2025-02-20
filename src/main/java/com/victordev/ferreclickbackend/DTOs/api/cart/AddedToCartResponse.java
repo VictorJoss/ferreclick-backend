@@ -1,6 +1,7 @@
 package com.victordev.ferreclickbackend.DTOs.api.cart;
 
 import com.victordev.ferreclickbackend.persistence.entity.Product;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -9,6 +10,7 @@ import lombok.Setter;
  */
 @Getter
 @Setter
+@Builder
 public class AddedToCartResponse {
 
     /**

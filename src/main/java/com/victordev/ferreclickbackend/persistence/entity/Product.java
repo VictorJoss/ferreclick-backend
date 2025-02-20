@@ -45,9 +45,13 @@ public class Product {
     /**
      * Cantidad disponible del producto.
      */
-    @OneToMany(fetch = FetchType.EAGER, mappedBy = "product", cascade = CascadeType.REMOVE)
+    @OneToMany( mappedBy = "product",fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     @JsonIgnore
     private List<Product_ProductCategory> categories;
+
+    @OneToMany(mappedBy = "product", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<CartItem> cartItems;
 
     public Product(String name, String description, Double price, String image) {
         this.name = name;

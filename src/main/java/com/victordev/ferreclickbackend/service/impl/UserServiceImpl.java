@@ -13,7 +13,7 @@ import com.victordev.ferreclickbackend.persistence.repository.UserRepository;
 import com.victordev.ferreclickbackend.service.ICartService;
 import com.victordev.ferreclickbackend.service.IUserService;
 import com.victordev.ferreclickbackend.service.JwtService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -31,48 +31,41 @@ import java.util.stream.Collectors;
  * Implementación del servicio de usuarios que proporciona métodos para registrar y autenticar usuarios.
  */
 @Service
+@RequiredArgsConstructor
 public class UserServiceImpl implements IUserService {
 
     /**
      * Repositorio de usuarios.
      */
-    @Autowired
-    private UserRepository userRepository;
+    private final UserRepository userRepository;
     /**
      * Repositorio de roles.
      */
-    @Autowired
-    private RoleRepository roleRepository;
+    private final RoleRepository roleRepository;
     /**
      * Codificador de contraseñas.
      */
-    @Autowired
-    private PasswordEncoder passwordEncoder;
+    private final PasswordEncoder passwordEncoder;
     /**
      * Configuración de seguridad HTTP.
      */
-    @Autowired
-    private HttpSecurity http;
+    private final HttpSecurity http;
     /**
      * Detalles del usuario.
      */
-    @Autowired
-    private UserDetailsService userDetailsService;
+    private final UserDetailsService userDetailsService;
     /**
      * Gestor de autenticación.
      */
-    @Autowired
-    private AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
     /**
      * Servicio de JWT.
      */
-    @Autowired
-    private JwtService jwtService;
+    private final JwtService jwtService;
     /**
      * Servicio de carrito.
      */
-    @Autowired
-    private ICartService cartService;
+    private final ICartService cartService;
 
     /**
      * Registra un nuevo usuario.
@@ -84,7 +77,7 @@ public class UserServiceImpl implements IUserService {
 
         if (userRepository.findByUsernameIgnoreCase(registrationBody.getUsername()).isPresent()
         || userRepository.findByEmailIgnoreCase(registrationBody.getEmail()).isPresent()) {
-            throw new UserAlreadyExistsException();
+            throw new UserAlreadyExistsException("User already exists");
         }
 
         String encodedPassword = passwordEncoder.encode(registrationBody.getPassword());
@@ -105,10 +98,8 @@ public class UserServiceImpl implements IUserService {
 
         User userSaved = userRepository.save(user);
         Cart newCart = cartService.createCart(userSaved);
-        List<Cart> carts = new ArrayList<>();
-        carts.add(newCart);
-        userSaved.setCarts(carts);
-        userRepository.save(userSaved);
+
+        userSaved.getCarts().add(newCart);
 
         return userSaved;
     }
@@ -170,13 +161,12 @@ public class UserServiceImpl implements IUserService {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found with id: "+ userId));
 
-        UserDto userDto = new UserDto();
-        userDto.setName(user.getName());
-        userDto.setUsername(user.getUsername());
-        userDto.setEmail(user.getEmail());
-        userDto.setRole(user.getRole().getName().name());
-
-        return userDto;
+        return UserDto.builder()
+                .name(user.getName())
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .role(user.getRole().getName().name())
+                .build();
     }
 
     /**

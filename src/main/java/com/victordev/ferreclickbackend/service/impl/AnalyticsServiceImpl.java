@@ -1,13 +1,12 @@
 package com.victordev.ferreclickbackend.service.impl;
 
-import com.victordev.ferreclickbackend.dto.api.CategoryDistributionDto;
-import com.victordev.ferreclickbackend.dto.api.MonthlyRevenueDto;
-import com.victordev.ferreclickbackend.dto.api.TopProductDto;
+import com.victordev.ferreclickbackend.DTOs.api.analytics.CategoryDistributionDto;
 import com.victordev.ferreclickbackend.DTOs.api.analytics.MonthlyRevenueDto;
 import com.victordev.ferreclickbackend.DTOs.api.analytics.TopProductDto;
 import com.victordev.ferreclickbackend.persistence.repository.AnalyticsRepository;
 import com.victordev.ferreclickbackend.service.IAnalyticsService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,13 +17,13 @@ import java.util.stream.Collectors;
  * productos más añadidos al carrito y categorías más añadidas al carrito.
  */
 @Service
+@RequiredArgsConstructor
 public class AnalyticsServiceImpl implements IAnalyticsService {
 
     /**
      * Repositorio de análisis.
      */
-    @Autowired
-    private AnalyticsRepository analyticsRepository;
+    private final AnalyticsRepository analyticsRepository;
 
     /**
      * Obtiene los ingresos mensuales.
