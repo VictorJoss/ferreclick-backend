@@ -1,6 +1,8 @@
 package com.victordev.ferreclickbackend.persistence.repository;
 
 import com.victordev.ferreclickbackend.persistence.entity.Product;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -18,4 +20,5 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
      * @return Objeto `Product` que representa el producto.
      */
     Optional<Product> findByNameIgnoreCase(String name);
+    Page<Product> findByCategories_Category_Id(Long categoryId, Pageable pageable);
 }

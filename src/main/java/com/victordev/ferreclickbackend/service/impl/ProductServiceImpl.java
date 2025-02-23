@@ -17,6 +17,8 @@ import com.victordev.ferreclickbackend.service.ImageService;
 import com.victordev.ferreclickbackend.utils.DtoConverter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -84,8 +86,9 @@ public class ProductServiceImpl implements IProductService {
      * Obtiene todos los productos.
      * @return Lista de objetos `ProductResponse` que representan los productos.
      */
-    public List<ProductResponse> getAllProducts() {
-        return productRepository.findAll().stream().map(dtoConverter::getProduct).collect(Collectors.toList());
+    public Page<ProductResponse> getAllProducts(Pageable pageable) {
+        return productRepository.findAll(pageable)
+                .map(dtoConverter::getProduct);
     }
 
     /**
@@ -102,12 +105,16 @@ public class ProductServiceImpl implements IProductService {
      * @param categoryId Identificador de la categoría.
      * @return Lista de objetos `ProductResponse` que representan los productos de la categoría.
      */
-    public List<ProductResponse> getProductsByCategory(Long categoryId) {
-        Optional<ProductCategory> category = categoryRepository.findById(categoryId);
-        return category.map(productCategory -> productCategory.getProducts().stream()
-                .map(product_productCategory -> dtoConverter.getProduct(product_productCategory.getProduct()))
-                .toList()).orElseGet(ArrayList::new);
+    public Page<ProductResponse> getProductsByCategory(Long categoryId, Pageable pageable) {
 
+        Page<ProductResponse> products = productRepository.findByCategories_Category_Id(categoryId, pageable)
+                .map(dtoConverter::getProduct);
+
+        if (products.getContent().isEmpty() || products.isEmpty()) {
+            throw new CategoryNotFoundException("Category not found with id: " + categoryId);
+        }
+
+        return products;
     }
 
     /**

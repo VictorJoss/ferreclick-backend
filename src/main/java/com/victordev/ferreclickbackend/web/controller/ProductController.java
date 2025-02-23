@@ -6,6 +6,8 @@ import com.victordev.ferreclickbackend.DTOs.api.product.UpdateProductBody;
 import com.victordev.ferreclickbackend.service.IProductService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -32,8 +34,12 @@ public class ProductController {
      */
     @PreAuthorize("permitAll()")
     @GetMapping
-    public List<ProductResponse> getAllProducts() {
-        return productService.getAllProducts();
+    public ResponseEntity<Page<ProductResponse>> getAllProducts(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
+
+        Page<ProductResponse> products = productService.getAllProducts(PageRequest.of(page, size));
+        return ResponseEntity.ok(products);
     }
 
     /**
@@ -71,9 +77,12 @@ public class ProductController {
      */
     @PreAuthorize("permitAll()")
     @GetMapping("/category/{categoryId}")
-    public ResponseEntity<List<ProductResponse>> getProductsByCategory(@PathVariable Long categoryId) {
+    public ResponseEntity<Page<ProductResponse>> getProductsByCategory(
+            @PathVariable Long categoryId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size) {
         try {
-            List<ProductResponse> products = productService.getProductsByCategory(categoryId);
+            Page<ProductResponse> products = productService.getProductsByCategory(categoryId, PageRequest.of(page, size));
             return ResponseEntity.ok(products);
         } catch (Exception e) {
             return ResponseEntity.status(500).build();

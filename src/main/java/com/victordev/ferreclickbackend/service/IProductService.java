@@ -3,6 +3,8 @@ package com.victordev.ferreclickbackend.service;
 import com.victordev.ferreclickbackend.DTOs.api.product.ProductBody;
 import com.victordev.ferreclickbackend.DTOs.api.product.ProductResponse;
 import com.victordev.ferreclickbackend.DTOs.api.product.UpdateProductBody;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.Optional;
@@ -23,7 +25,7 @@ public interface IProductService {
      * Obtiene todos los productos.
      * @return Lista de objetos que contienen la información de los productos.
      */
-    List<ProductResponse> getAllProducts();
+    Page<ProductResponse> getAllProducts(Pageable pageable);
 
     /**
      * Obtiene un producto por su identificador.
@@ -44,7 +46,7 @@ public interface IProductService {
      * @param categoryId Identificador de la categoría.
      * @return Lista de objetos que contienen la información de los productos.
      */
-    List<ProductResponse> getProductsByCategory(Long categoryId);
+    Page<ProductResponse> getProductsByCategory(Long categoryId, Pageable pageable);
 
     /**
      * Elimina un producto.
