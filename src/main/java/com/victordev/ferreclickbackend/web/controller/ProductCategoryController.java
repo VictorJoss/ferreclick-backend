@@ -3,7 +3,7 @@ package com.victordev.ferreclickbackend.web.controller;
 import com.victordev.ferreclickbackend.DTOs.api.productCategory.ProductCategoryBody;
 import com.victordev.ferreclickbackend.service.IProductCategoryService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -16,13 +16,13 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/product-categories")
+@RequiredArgsConstructor
 public class ProductCategoryController {
 
     /**
      * Servicio de categorías de productos.
      */
-    @Autowired
-    private IProductCategoryService productCategoryService;
+    private final IProductCategoryService productCategoryService;
 
     /**
      * Obtiene todas las categorías de productos.
@@ -42,9 +42,7 @@ public class ProductCategoryController {
     @PreAuthorize("permitAll()")
     @GetMapping("/{id}")
     public ResponseEntity<ProductCategoryBody> getProductCategoryById(@PathVariable Long id) {
-        return productCategoryService.getCategoryById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+        return ResponseEntity.ok(productCategoryService.getCategoryById(id));
     }
 
     /**
@@ -56,8 +54,8 @@ public class ProductCategoryController {
     @PostMapping
     public ResponseEntity<ProductCategoryBody> createProductCategory(@RequestBody @Valid ProductCategoryBody productCategoryBody) {
         ProductCategoryBody createdCategory = productCategoryService.createCategory(productCategoryBody);
-        URI location = URI.create("/api/product-categories" + createdCategory.getId());
-        return ResponseEntity.created(location).build();
+        URI location = URI.create("/api/product-categories/" + createdCategory.getId());
+        return ResponseEntity.created(location).body(createdCategory);
     }
 
     /**

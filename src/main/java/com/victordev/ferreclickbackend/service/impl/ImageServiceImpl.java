@@ -7,28 +7,31 @@ import com.victordev.ferreclickbackend.persistence.entity.Image;
 import com.victordev.ferreclickbackend.persistence.repository.ImageRepository;
 import com.victordev.ferreclickbackend.service.ICloudinaryService;
 import com.victordev.ferreclickbackend.service.ImageService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Objects;
+import java.util.Optional;
 
 /**
  * Implementación del servicio de imágenes que proporciona métodos para subir y borrar imágenes.
  */
 @Service
+@RequiredArgsConstructor
 public class ImageServiceImpl implements ImageService {
 
     /**
      * Servicio de Cloudinary.
      */
-    @Autowired
-    private ICloudinaryService cloudinaryService;
+    private final ICloudinaryService cloudinaryService;
     /**
      * Repositorio de imágenes.
      */
-    @Autowired
-    private ImageRepository imageRepository;
+    private final ImageRepository imageRepository;
+
+    @Value("${cloudinary.folder}")
+    private String CLOUDINARY_FOLDER;
 
     /**
      * Sube una imagen a Cloudinary.
@@ -38,34 +41,33 @@ public class ImageServiceImpl implements ImageService {
     @Override
     public String uploadImage(MultipartFile file) {
 
-        if (file.isEmpty() || !Objects.requireNonNull(file.getContentType()).startsWith("image/")) {
+        String contentType = Optional.ofNullable(file.getContentType()).orElse("");
+        if (file.isEmpty() || !contentType.startsWith("image/")) {
             throw new InvalidImageException("The file is empty or not an image");
         }
 
-        try {
-
-            Image image = new Image();
-            image.setUrl(cloudinaryService.uploadFile(file, "ferreclick"));
-            String url = image.getUrl();
-            if(url == null) {
-                throw new ImageUploadException("Error creating image URL");
-            }
-            imageRepository.save(image);
-            return url;
-        } catch (Exception e) {
-            throw new ImageUploadException("Error uploading image");
+        String url = cloudinaryService.uploadFile(file, CLOUDINARY_FOLDER);
+        if (url == null) {
+            throw new ImageUploadException("Error creating image URL");
         }
+
+        Image image = new Image();
+        image.setUrl(url);
+        imageRepository.save(image);
+
+        return url;
     }
 
     /**
      * Elimina una imagen de Cloudinary.
      * @param imageUrl URL de la imagen a eliminar.
      */
-    public void deleteImage(String imageUrl){
+    @Override
+    public void deleteImage(String imageUrl) {
         try {
-            cloudinaryService.deleteFile(imageUrl, "ferreclick");
+            cloudinaryService.deleteFile(imageUrl, CLOUDINARY_FOLDER);
         } catch (Exception e) {
-            throw new DeleteImageException("Error deleting image");
+            throw new DeleteImageException("Error deleting image: " + e.getMessage());
         }
     }
 }

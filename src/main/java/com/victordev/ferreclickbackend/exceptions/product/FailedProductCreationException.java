@@ -5,6 +5,10 @@ package com.victordev.ferreclickbackend.exceptions.product;
  */
 public class FailedProductCreationException extends RuntimeException{
 
+    public FailedProductCreationException(String message) {
+        super(message);
+    }
+
     /**
      * Constructor de la excepción.
      * @param message Mensaje de error.

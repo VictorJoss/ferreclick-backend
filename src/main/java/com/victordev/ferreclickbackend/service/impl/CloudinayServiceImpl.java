@@ -1,6 +1,7 @@
 package com.victordev.ferreclickbackend.service.impl;
 
 import com.cloudinary.Cloudinary;
+import com.victordev.ferreclickbackend.exceptions.cloudinary.CloudinaryException;
 import com.victordev.ferreclickbackend.service.ICloudinaryService;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Service;
@@ -36,8 +37,7 @@ public class CloudinayServiceImpl implements ICloudinaryService {
             return cloudinary.url().secure(true).generate(publicId);
 
         }catch (IOException e){
-            e.printStackTrace();
-            return null;
+            throw new CloudinaryException("Error uploading file to Cloudinary", e);
         }
     }
 
@@ -47,12 +47,16 @@ public class CloudinayServiceImpl implements ICloudinaryService {
      * @param folderName Nombre de la carpeta en la que se encuentra el archivo.
      */
     @Override
-    public void deleteFile(String urlFile, String folderName){
+    public void deleteFile(String urlFile, String folderName) {
         try {
             String publicId = extractPublicId(urlFile);
-            cloudinary.uploader().destroy(publicId, getOptions(folderName));
+            Map result = cloudinary.uploader().destroy(publicId, getOptions(folderName));
+
+            if (!"ok".equals(result.get("result"))) {
+                throw new CloudinaryException("Failed to delete file from Cloudinary. Response: " + result);
+            }
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new CloudinaryException("Error deleting file from Cloudinary", e);
         }
     }
 
@@ -61,8 +65,8 @@ public class CloudinayServiceImpl implements ICloudinaryService {
      * @param folderName Nombre de la carpeta en la que se guardará o se encuentra el archivo.
      * @return Opciones para subir o eliminar un archivo.
      */
-    private HashMap<Object, Object> getOptions(String folderName){
-        HashMap<Object, Object> options = new HashMap<>();
+    private Map<String, Object> getOptions(String folderName){
+        Map<String, Object> options = new HashMap<>();
         options.put("folder", folderName);
         return options;
     }
@@ -74,21 +78,21 @@ public class CloudinayServiceImpl implements ICloudinaryService {
      */
     private String extractPublicId(String url) {
         if (url == null || url.isEmpty()) {
-            throw new IllegalArgumentException("El URL no puede ser nulo o vacío");
+            throw new IllegalArgumentException("The URL cannot be null or empty");
         }
 
         String expectedPrefix = "/upload/";
         int startIndex = url.indexOf(expectedPrefix);
 
         if (startIndex == -1) {
-            throw new IllegalArgumentException("El URL proporcionado no contiene '/upload/'");
+            throw new IllegalArgumentException("The provided URL does not contain '/upload/'");
         }
 
         startIndex += expectedPrefix.length();
-
         int folderEndIndex = url.indexOf('/', startIndex);
+
         if (folderEndIndex == -1) {
-            throw new IllegalArgumentException("El URL proporcionado no tiene un formato válido");
+            throw new IllegalArgumentException("The provided URL does not have a valid format");
         }
 
         int endIndex = url.indexOf('?', folderEndIndex + 1);
@@ -99,7 +103,7 @@ public class CloudinayServiceImpl implements ICloudinaryService {
         String publicId = url.substring(folderEndIndex + 1, endIndex);
 
         if (publicId.isEmpty()) {
-            throw new IllegalArgumentException("No se pudo extraer un public ID válido del URL");
+            throw new IllegalArgumentException("Could not extract a valid public ID from the URL");
         }
 
         return publicId;

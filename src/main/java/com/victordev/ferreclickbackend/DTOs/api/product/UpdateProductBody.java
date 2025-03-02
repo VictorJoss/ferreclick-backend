@@ -1,9 +1,6 @@
 package com.victordev.ferreclickbackend.DTOs.api.product;
 
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.web.multipart.MultipartFile;
@@ -49,5 +46,7 @@ public class UpdateProductBody {
     /**
      * Lista de identificadores de las categorías a las que pertenece el producto.
      */
+    @NotNull
+    @NotEmpty
     private List<Long> categoryIds;
 }

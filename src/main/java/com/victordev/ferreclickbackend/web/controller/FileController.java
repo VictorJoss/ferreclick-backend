@@ -1,7 +1,7 @@
 package com.victordev.ferreclickbackend.web.controller;
 
 import com.victordev.ferreclickbackend.service.FileService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,13 +17,13 @@ import java.util.List;
 @CrossOrigin(origins = "http://localhost:4200")  // Ajusta el puerto según tu aplicación Angular
 @RestController
 @RequestMapping("/api")
+@RequiredArgsConstructor
 public class FileController {
 
     /**
      * Servicio de archivos.
      */
-    @Autowired
-    private FileService fileService;
+    private final FileService fileService;
 
     /**
      * Ruta del directorio de archivos.

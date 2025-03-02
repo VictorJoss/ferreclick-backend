@@ -3,14 +3,18 @@ package com.victordev.ferreclickbackend.service.impl;
 import com.victordev.ferreclickbackend.DTOs.api.cart.AddToCartRequest;
 import com.victordev.ferreclickbackend.DTOs.api.cart.AddedToCartResponse;
 import com.victordev.ferreclickbackend.DTOs.api.cart.CartResponse;
+import com.victordev.ferreclickbackend.exceptions.cart.CartNotFoundException;
+import com.victordev.ferreclickbackend.exceptions.cart.PaymentProcessingException;
+import com.victordev.ferreclickbackend.exceptions.product.ProductNotFoundException;
+import com.victordev.ferreclickbackend.exceptions.security.IllegalUserException;
 import com.victordev.ferreclickbackend.persistence.entity.Cart;
 import com.victordev.ferreclickbackend.persistence.entity.CartItem;
 import com.victordev.ferreclickbackend.persistence.entity.Product;
 import com.victordev.ferreclickbackend.persistence.entity.User;
 import com.victordev.ferreclickbackend.persistence.repository.CartRepository;
-import com.victordev.ferreclickbackend.persistence.repository.ProductRepository;
-import com.victordev.ferreclickbackend.persistence.repository.UserRepository;
+import com.victordev.ferreclickbackend.service.IAuthService;
 import com.victordev.ferreclickbackend.service.ICartService;
+import com.victordev.ferreclickbackend.service.IEntityFinderService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,17 +32,17 @@ import java.util.Optional;
 public class CartServiceImpl implements ICartService {
 
     /**
-     * Repositorio de usuarios.
-     */
-    private final UserRepository userRepository;
-    /**
-     * Repositorio de productos.
-     */
-    private final ProductRepository productRepository;
-    /**
      * Repositorio de carritos.
      */
     private final CartRepository cartRepository;
+    /**
+     * Servicio de búsqueda de entidades.
+     */
+    private final IEntityFinderService entityFinderService;
+    /**
+     * Servicio de autenticación.
+     */
+    private final IAuthService authService;
 
     /**
      * Añade un producto al carrito de un usuario.
@@ -48,38 +52,33 @@ public class CartServiceImpl implements ICartService {
     @Transactional
     public AddedToCartResponse addProductToCart(AddToCartRequest addToCartRequest) {
 
-        Optional<User> user = userRepository.findById(addToCartRequest.getUserId());
-        Optional<Product> product = productRepository.findById(addToCartRequest.getProductId());
+        User user = entityFinderService.getUserById(addToCartRequest.getUserId());
 
-        if (user.isPresent() && product.isPresent()) {
+        if(authService.isLegalUser(user.getId())){
+            throw new IllegalUserException("User is not authorized to perform this action.");
+        }
 
-            Cart cart = getActiveCart(user.get());
+        Product product = entityFinderService.getProductById(addToCartRequest.getProductId());
+        Cart cart = getActiveCart(user);
 
-            Optional<CartItem> existingCartItem = cart.getItems().stream()
-                    .filter(cartItem -> cartItem.getProduct().getId().equals(addToCartRequest.getProductId()))
-                    .findFirst();
+        Optional<CartItem> existingCartItem = cart.getItems().stream()
+                .filter(cartItem -> cartItem.getProduct().getId().equals(addToCartRequest.getProductId()))
+                .findFirst();
 
-            if (existingCartItem.isPresent()) {
-                existingCartItem.get().setQuantity(addToCartRequest.getQuantity());
-                return AddedToCartResponse.builder()
-                        .product(product.get())
-                        .quantity(addToCartRequest.getQuantity())
-                        .build();
-            }
-
+        if (existingCartItem.isPresent()) {
+            existingCartItem.get().setQuantity(addToCartRequest.getQuantity());
+        } else {
             CartItem newCartItem = new CartItem();
-            newCartItem.setProduct(product.get());
+            newCartItem.setProduct(product);
             newCartItem.setCart(cart);
             newCartItem.setQuantity(addToCartRequest.getQuantity());
-
             cart.getItems().add(newCartItem);
-
-            return AddedToCartResponse.builder()
-                    .product(product.get())
-                    .quantity(addToCartRequest.getQuantity())
-                    .build();
         }
-        throw new RuntimeException("user or product doesn't exist");
+
+        return AddedToCartResponse.builder()
+                .product(product)
+                .quantity(addToCartRequest.getQuantity())
+                .build();
     }
 
     /**
@@ -88,13 +87,14 @@ public class CartServiceImpl implements ICartService {
      * @return Objeto que contiene los productos del carrito.
      */
     public CartResponse getCartByUserId(Long userId){
-        Optional<User> user = userRepository.findById(userId);
-        if (user.isEmpty()){
-            throw new RuntimeException("User doesn't exist");
+        User user = entityFinderService.getUserById(userId);
+
+        if(authService.isLegalUser(user.getId())){
+            throw new IllegalUserException("User is not authorized to remove products from this cart.");
         }
 
         return CartResponse.builder()
-                .cartItems(getActiveCart(user.get()).getItems())
+                .cartItems(getActiveCart(user).getItems())
                 .build();
     }
 
@@ -105,19 +105,20 @@ public class CartServiceImpl implements ICartService {
      */
     @Transactional
     public void removeProductFromCart(Long userId, Long productId) {
-        Optional<User> user = userRepository.findById(userId);
-        if (user.isEmpty()) {
-            throw new RuntimeException("User doesn't exist");
+        User user = entityFinderService.getUserById(userId);
+
+        if(authService.isLegalUser(user.getId())){
+            throw new IllegalUserException("User is not authorized to remove products from this cart.");
         }
 
-        Cart cart = getActiveCart(user.get());
+        entityFinderService.getProductById(productId);
+        Cart cart = getActiveCart(user);
 
-        Optional<Product> product = productRepository.findById(productId);
-        if(product.isEmpty()){
-            throw new RuntimeException("Product doesn't exist");
+        boolean removed = cart.getItems().removeIf(cartItem -> cartItem.getProduct().getId().equals(productId));
+
+        if (!removed) {
+            throw new ProductNotFoundException("Product not found in the cart.");
         }
-
-        cart.getItems().removeIf(cartItem -> cartItem.getProduct().getId().equals(productId));
     }
 
     /**
@@ -126,12 +127,17 @@ public class CartServiceImpl implements ICartService {
      */
     @Transactional
     public void clearCart(Long userId){
-        Optional<User> user = userRepository.findById(userId);
-        if (user.isEmpty()) {
-            throw new RuntimeException("User doesn't exist");
+        User user = entityFinderService.getUserById(userId);
+
+        if(authService.isLegalUser(user.getId())){
+            throw new IllegalUserException("User is not authorized to remove products from this cart.");
         }
 
-        Cart cart = getActiveCart(user.get());
+        Cart cart = getActiveCart(user);
+
+        if (cart.getItems().isEmpty()) {
+            throw new ProductNotFoundException("Cart is already empty.");
+        }
 
         cart.getItems().clear();
     }
@@ -143,14 +149,10 @@ public class CartServiceImpl implements ICartService {
      */
     @Transactional
     public Cart createCart(User user){
-
-        Optional<User> existingUser = userRepository.findById(user.getId());
-        if (existingUser.isEmpty()) {
-            throw new RuntimeException("User doesn't exist");
-        }
+        User userFound = entityFinderService.getUserById(user.getId());
 
         Cart cart = new Cart();
-        cart.setUser(user);
+        cart.setUser(userFound);
         cart.setItems(new ArrayList<>());
         cart.setCreatedDate(LocalDateTime.now());
         cart.setCompleted(false);
@@ -164,22 +166,24 @@ public class CartServiceImpl implements ICartService {
      */
     @Transactional
     public void processPaymentCart(Long userId){
+        User user = entityFinderService.getUserById(userId);
 
-        Optional<User> user = userRepository.findById(userId);
-
-        if (user.isEmpty()) {
-            throw new RuntimeException("User doesn't exist");
+        if(authService.isLegalUser(user.getId())){
+            throw new IllegalUserException("User is not authorized to remove products from this cart.");
         }
 
-        Cart cart = getActiveCart(user.get());
+        Cart cart = getActiveCart(user);
+
+        if (cart.getItems().isEmpty()) {
+            throw new ProductNotFoundException("Cannot process payment. Cart is empty.");
+        }
 
         try {
             cart.setCompleted(true);
-
-            Cart newCart = createCart(user.get());
-            user.get().getCarts().add(newCart);
-        }catch (Exception e){
-            throw new RuntimeException("Error trying to process payment", e);
+            Cart newCart = createCart(user);
+            user.getCarts().add(newCart);
+        } catch (Exception e) {
+            throw new PaymentProcessingException("Error occurred while processing the payment.", e);
         }
     }
 
@@ -193,6 +197,6 @@ public class CartServiceImpl implements ICartService {
                 .stream()
                 .filter(cart -> !cart.isCompleted())
                 .findFirst()
-                .orElseThrow(() -> new RuntimeException("No active cart found"));
+                .orElseThrow(() -> new CartNotFoundException("No active cart found for the user."));
     }
 }

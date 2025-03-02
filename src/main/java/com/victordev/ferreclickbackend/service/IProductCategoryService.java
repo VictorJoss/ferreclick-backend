@@ -3,7 +3,6 @@ package com.victordev.ferreclickbackend.service;
 import com.victordev.ferreclickbackend.DTOs.api.productCategory.ProductCategoryBody;
 
 import java.util.List;
-import java.util.Optional;
 
 /**
  * Interfaz del servicio de categorías de productos que proporciona métodos para crear, obtener, actualizar y eliminar
@@ -29,7 +28,7 @@ public interface IProductCategoryService {
      * @param id Identificador de la categoría de productos.
      * @return Objeto que contiene la información de la categoría de productos.
      */
-    Optional<ProductCategoryBody> getCategoryById(Long id);
+    ProductCategoryBody getCategoryById(Long id);
 
     /**
      * Actualiza una categoría de productos.

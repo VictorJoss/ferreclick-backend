@@ -7,7 +7,6 @@ import com.victordev.ferreclickbackend.persistence.entity.ProductCategory;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.stream.Collectors;
 
 /**
  * Clase que proporciona métodos para convertir entidades en objetos DTO.
@@ -29,7 +28,7 @@ public class DtoConverter {
         productResponse.setPrice(product.getPrice());
         productResponse.setCategoryIds(product.getCategories().stream()
                 .map(pc -> pc.getCategory().getId())
-                .collect(Collectors.toList()));
+                .toList());
         return productResponse;
     }
 
@@ -49,7 +48,7 @@ public class DtoConverter {
         }
         productCategoryBody.setProductIds(category.getProducts().stream()
                     .map(pc -> pc.getProduct().getId())
-                    .collect(Collectors.toList()));
+                    .toList());
         return productCategoryBody;
     }
 }

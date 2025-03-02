@@ -1,4 +1,4 @@
-package com.victordev.ferreclickbackend.exceptions.support;
+package com.victordev.ferreclickbackend.DTOs.exception.support;
 
 import lombok.Getter;
 import lombok.Setter;

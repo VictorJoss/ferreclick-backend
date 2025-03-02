@@ -93,6 +93,11 @@ public class User implements UserDetails {
         return authorities;
     }
 
+    @Override
+    public String getUsername() {
+        return this.username;
+    }
+
     /**
      * Obtiene la contraseña del usuario.
      */

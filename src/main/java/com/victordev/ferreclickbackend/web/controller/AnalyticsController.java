@@ -4,7 +4,7 @@ import com.victordev.ferreclickbackend.DTOs.api.analytics.CategoryDistributionDt
 import com.victordev.ferreclickbackend.DTOs.api.analytics.MonthlyRevenueDto;
 import com.victordev.ferreclickbackend.DTOs.api.analytics.TopProductDto;
 import com.victordev.ferreclickbackend.service.IAnalyticsService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,13 +20,13 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/api/analytics")
+@RequiredArgsConstructor
 public class AnalyticsController {
 
     /**
      * Servicio de análisis.
      */
-    @Autowired
-    private IAnalyticsService analyticsService;
+    private final IAnalyticsService analyticsService;
 
     /**
      * Obtiene los ingresos mensuales.

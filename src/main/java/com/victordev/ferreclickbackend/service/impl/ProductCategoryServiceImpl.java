@@ -1,11 +1,13 @@
 package com.victordev.ferreclickbackend.service.impl;
 
 import com.victordev.ferreclickbackend.DTOs.api.productCategory.ProductCategoryBody;
-import com.victordev.ferreclickbackend.persistence.entity.Product;
+import com.victordev.ferreclickbackend.exceptions.productCategories.CategoryAlreadyExistException;
+import com.victordev.ferreclickbackend.exceptions.productCategories.CategoryNotFoundException;
+import com.victordev.ferreclickbackend.exceptions.productCategories.CategoryProductException;
 import com.victordev.ferreclickbackend.persistence.entity.ProductCategory;
 import com.victordev.ferreclickbackend.persistence.entity.Product_ProductCategory;
 import com.victordev.ferreclickbackend.persistence.repository.ProductCategoryRepository;
-import com.victordev.ferreclickbackend.persistence.repository.ProductRepository;
+import com.victordev.ferreclickbackend.service.IEntityFinderService;
 import com.victordev.ferreclickbackend.service.IProductCategoryService;
 import com.victordev.ferreclickbackend.utils.DtoConverter;
 import lombok.RequiredArgsConstructor;
@@ -14,8 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Implementación del servicio de categorías de productos que proporciona métodos para crear, obtener, actualizar y
@@ -30,13 +30,13 @@ public class ProductCategoryServiceImpl implements IProductCategoryService {
      */
     private final ProductCategoryRepository categoryRepository;
     /**
-     * Repositorio de productos.
-     */
-    private final ProductRepository productRepository;
-    /**
      * Conversor de DTO.
      */
     private final DtoConverter dtoConverter;
+    /**
+     * Servicio de búsqueda de entidades.
+     */
+    private final IEntityFinderService entityFinderService;
 
     /**
      * Crea una nueva categoría de productos.
@@ -46,38 +46,40 @@ public class ProductCategoryServiceImpl implements IProductCategoryService {
     @Transactional
     public ProductCategoryBody createCategory(ProductCategoryBody categoryBody) {
 
-        Optional<ProductCategory> categoryVerification = categoryRepository.findByNameIgnoreCase(categoryBody.getName());
-        if(categoryVerification.isPresent()){
-            throw new RuntimeException("A category already exist with the name: " + categoryBody.getName());
-        }
+        categoryRepository.findByNameIgnoreCase(categoryBody.getName())
+                .ifPresent(category -> {
+                    throw new CategoryAlreadyExistException("A category already exists with the name: " + categoryBody.getName());
+                });
 
-        try{
             ProductCategory newCategory = new ProductCategory();
             newCategory.setName(categoryBody.getName());
             newCategory.setDescription(categoryBody.getDescription());
             newCategory.setProducts(new ArrayList<>());
 
             ProductCategory savedCategory = categoryRepository.save(newCategory);
-
             addProductsToCategory(categoryBody.getProductIds(), savedCategory);
 
             return dtoConverter.getProductCategory(savedCategory);
-        }catch (Exception e){
-            throw new RuntimeException("Failed to create category", e);
-        }
     }
 
     /**
      * Obtiene todas las categorías de productos.
      * @return Lista de objetos `ProductCategoryBody` que representan las categorías de productos.
      */
-    public List<ProductCategoryBody> getCategories() {
-        return categoryRepository.findAll().stream().map(dtoConverter::getProductCategory).collect(Collectors.toList());
-    }
+public List<ProductCategoryBody> getCategories() {
+    List<ProductCategoryBody> categories = categoryRepository.findAll().stream()
+            .map(dtoConverter::getProductCategory)
+            .toList();
 
-    public Optional<ProductCategoryBody> getCategoryById(Long id) {
-        return categoryRepository.findById(id).map(dtoConverter::getProductCategory);
+    if (categories.isEmpty()) {
+        throw new CategoryNotFoundException("No categories found");
     }
+    return categories;
+}
+
+    public ProductCategoryBody getCategoryById(Long id) {
+        return dtoConverter.getProductCategory(entityFinderService.getCategoryById(id));
+        }
 
     /**
      * Actualiza una categoría de productos.
@@ -87,8 +89,7 @@ public class ProductCategoryServiceImpl implements IProductCategoryService {
     @Transactional
     public ProductCategoryBody updateCategory(ProductCategoryBody categoryBody) {
 
-        ProductCategory existingCategory = categoryRepository.findById(categoryBody.getId())
-                .orElseThrow(() -> new RuntimeException("Category not found with id: " + categoryBody.getId()));
+        ProductCategory existingCategory = entityFinderService.getCategoryById(categoryBody.getId());
 
         existingCategory.setName(categoryBody.getName());
         existingCategory.setDescription(categoryBody.getDescription());
@@ -103,13 +104,9 @@ public class ProductCategoryServiceImpl implements IProductCategoryService {
      */
     @Transactional
     public void deleteCategory(Long categoryId){
-        ProductCategory category = categoryRepository.findById(categoryId)
-                .orElseThrow(() -> new RuntimeException("Product not found with id: " + categoryId));
-        try {
-            categoryRepository.deleteById(category.getId());
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to delete category with id: " + categoryId, e);
-        }
+
+        ProductCategory categoryFound = entityFinderService.getCategoryById(categoryId);
+        categoryRepository.deleteById(categoryFound.getId());
     }
 
     /**
@@ -120,18 +117,13 @@ public class ProductCategoryServiceImpl implements IProductCategoryService {
     @Transactional
     protected void addProductsToCategory(List<Long> productIds, ProductCategory category){
 
+        category.getProducts().clear();
         if (productIds != null && !productIds.isEmpty()) {
             List<Product_ProductCategory> products = productIds.stream()
-                    .map(productId -> {
-                        Product product = productRepository.findById(productId)
-                                .orElseThrow(() -> new RuntimeException("product not found with id " + productId));
-                        return new Product_ProductCategory(product, category);
-                    })
+                    .map(entityFinderService::getProductById)
+                    .map(product -> new Product_ProductCategory(product, category))
                     .toList();
-
-            category.getProducts().clear();
             category.getProducts().addAll(products);
         }
-        category.getProducts().clear();
     }
 }

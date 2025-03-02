@@ -5,13 +5,11 @@ import com.victordev.ferreclickbackend.DTOs.api.product.ProductResponse;
 import com.victordev.ferreclickbackend.DTOs.api.product.UpdateProductBody;
 import com.victordev.ferreclickbackend.exceptions.product.FailedProductCreationException;
 import com.victordev.ferreclickbackend.exceptions.product.ProductAlreadyExistsException;
-import com.victordev.ferreclickbackend.exceptions.product.ProductNotExistException;
-import com.victordev.ferreclickbackend.exceptions.productCategories.AddCategoriesToProductException;
-import com.victordev.ferreclickbackend.exceptions.productCategories.CategoryNotFoundException;
+import com.victordev.ferreclickbackend.exceptions.product.ProductException;
 import com.victordev.ferreclickbackend.persistence.entity.Product;
-import com.victordev.ferreclickbackend.persistence.entity.ProductCategory;
 import com.victordev.ferreclickbackend.persistence.entity.Product_ProductCategory;
 import com.victordev.ferreclickbackend.persistence.repository.*;
+import com.victordev.ferreclickbackend.service.IEntityFinderService;
 import com.victordev.ferreclickbackend.service.IProductService;
 import com.victordev.ferreclickbackend.service.ImageService;
 import com.victordev.ferreclickbackend.utils.DtoConverter;
@@ -24,8 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
 
 /**
  * Implementación del servicio de productos que proporciona métodos para crear, obtener, actualizar y eliminar productos.
@@ -39,9 +35,9 @@ public class ProductServiceImpl implements IProductService {
      */
     private final ProductRepository productRepository;
     /**
-     * Repositorio de categorías de productos.
+     * Servicio de búsqueda de entidades.
      */
-    private final ProductCategoryRepository categoryRepository;
+    private final IEntityFinderService entityFinderService;
     /**
      * Conversor de DTO.
      */
@@ -60,26 +56,24 @@ public class ProductServiceImpl implements IProductService {
     @Transactional(rollbackFor = Exception.class)
     public ProductResponse createProduct(ProductBody productBody) {
 
-        Optional<Product> productVerification = productRepository.findByNameIgnoreCase(productBody.getName());
-        if(productVerification.isPresent()){
-            throw new ProductAlreadyExistsException("A product already exists with the name: " + productBody.getName());
-        }
+        productRepository.findByNameIgnoreCase(productBody.getName())
+                .ifPresent(product -> {
+                    throw new ProductAlreadyExistsException("A product already exists with the name: " + productBody.getName());
+                });
+
+        Product newProduct = new Product(productBody.getName(), productBody.getDescription(), productBody.getPrice());
+        newProduct.setCategories(new ArrayList<>());
+
+        addCategoriesToProduct(productBody.getCategoryIds(), newProduct);
+        Product savedProduct = productRepository.save(newProduct);
 
         String imageUrl = imageService.uploadImage(productBody.getImage());
-
-        try{
-            Product newProduct = new Product(productBody.getName(), productBody.getDescription(), productBody.getPrice(), imageUrl);
-
-            Product savedProduct = productRepository.save(newProduct);
-
-            addCategoriesToProduct(productBody.getCategoryIds(), savedProduct);
-
-            return dtoConverter.getProduct(savedProduct);
-        } catch (DataIntegrityViolationException e) {
-            throw new FailedProductCreationException("Data Integrity Error During Product Creation", e);
-        } catch (Exception e) {
-            throw new FailedProductCreationException("Unexpected Error During Product Creation", e);
+        if (imageUrl == null) {
+            throw new FailedProductCreationException("Failed to upload product image");
         }
+        savedProduct.setImage(imageUrl);
+
+        return dtoConverter.getProduct(savedProduct);
     }
 
     /**
@@ -119,41 +113,37 @@ public class ProductServiceImpl implements IProductService {
     @Transactional
     public ProductResponse updateProduct(UpdateProductBody updateProductBody) {
 
-        Optional<Product> existingProduct = productRepository.findById(updateProductBody.getId());
+        Product productFound = entityFinderService.getProductById(updateProductBody.getId());
 
-        if(existingProduct.isEmpty()){
-            throw new ProductNotExistException("Product not found with id: " + updateProductBody.getId());
+        productFound.setName(updateProductBody.getName());
+        productFound.setDescription(updateProductBody.getDescription());
+        productFound.setPrice(updateProductBody.getPrice());
+
+        addCategoriesToProduct(updateProductBody.getCategoryIds(), productFound);
+
+        if (updateProductBody.getImage() != null && !updateProductBody.getImage().isEmpty()) {
+            String newImageUrl = imageService.uploadImage(updateProductBody.getImage());
+            if (newImageUrl != null) {
+                imageService.deleteImage(productFound.getImage());
+                productFound.setImage(newImageUrl);
+            }
         }
 
-        existingProduct.get().setName(updateProductBody.getName());
-        existingProduct.get().setDescription(updateProductBody.getDescription());
-        existingProduct.get().setPrice(updateProductBody.getPrice());
-
-        if(updateProductBody.getImage() != null && !updateProductBody.getImage().isEmpty()){
-            imageService.deleteImage(existingProduct.get().getImage());
-            existingProduct.get().setImage(imageService.uploadImage(updateProductBody.getImage()));
-        }
-
-        if(updateProductBody.getCategoryIds() != null && !updateProductBody.getCategoryIds().isEmpty()) {
-            addCategoriesToProduct(updateProductBody.getCategoryIds(), existingProduct.get());
-        }
-
-        return dtoConverter.getProduct(existingProduct.get());
+        return dtoConverter.getProduct(productFound);
     }
 
     /**
      * Elimina un producto.
      * @param productId Identificador del producto a eliminar.
      */
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public void deleteProduct(Long productId){
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new RuntimeException("Product not found with id: " + productId));
+        Product product = entityFinderService.getProductById(productId);
         try {
             productRepository.deleteById(product.getId());
             imageService.deleteImage(product.getImage());
-        } catch (Exception e) {
-            throw new RuntimeException("Failed to delete product with id: " + productId, e);
+        } catch (DataIntegrityViolationException e) {
+            throw new ProductException("Cannot delete product with id: " + productId + " due to data integrity constraints", e);
         }
     }
 
@@ -164,19 +154,14 @@ public class ProductServiceImpl implements IProductService {
      */
     @Transactional
     protected void addCategoriesToProduct(List<Long> categoryIds, Product product){
-        try {
-            List<Product_ProductCategory> productCategories = categoryIds.stream()
-                    .map(categoryId -> {
-                        ProductCategory category = categoryRepository.findById(categoryId)
-                                .orElseThrow(() -> new CategoryNotFoundException("Category not found with id: " + categoryId));
-                        return new Product_ProductCategory(product, category);
-                    })
-                    .toList();
 
-            product.getCategories().clear();
+        product.getCategories().clear();
+        if (categoryIds != null && !categoryIds.isEmpty()) {
+            List<Product_ProductCategory> productCategories = categoryIds.stream()
+                    .map(entityFinderService::getCategoryById)
+                    .map(category -> new Product_ProductCategory(product, category))
+                    .toList();
             product.getCategories().addAll(productCategories);
-        }catch (Exception e){
-            throw new AddCategoriesToProductException("Error adding categories to product", e);
         }
     }
 }

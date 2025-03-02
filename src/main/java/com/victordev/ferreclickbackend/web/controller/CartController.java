@@ -5,7 +5,7 @@ import com.victordev.ferreclickbackend.DTOs.api.cart.AddedToCartResponse;
 import com.victordev.ferreclickbackend.DTOs.api.cart.CartResponse;
 import com.victordev.ferreclickbackend.service.ICartService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -15,13 +15,13 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @RequestMapping("/api/cart")
+@RequiredArgsConstructor
 public class CartController {
 
     /**
      * Servicio de carrito.
      */
-    @Autowired
-    private ICartService cartService;
+    private final ICartService cartService;
 
     /**
      * Añade un producto al carrito.
