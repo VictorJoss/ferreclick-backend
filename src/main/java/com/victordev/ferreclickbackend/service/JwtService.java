@@ -1,6 +1,7 @@
 package com.victordev.ferreclickbackend.service;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
@@ -79,5 +80,29 @@ public class JwtService {
      */
     public String extractSubject(String jwt){
         return extractAllClaims(jwt).getSubject();
+    }
+
+    /**
+     * Valida si un token JWT es válido.
+     * @param jwt Token JWT a validar.
+     * @param userDetails Detalles del usuario.
+     * @return true si el token es válido, false en caso contrario.
+     */
+    public boolean isTokenValid(String jwt, UserDetails userDetails) {
+        try {
+            final String username = extractSubject(jwt);
+            return (username.equals(userDetails.getUsername()) && !isTokenExpired(jwt));
+        } catch (JwtException e) {
+            return false;
+        }
+    }
+
+    /**
+     * Verifica si un token JWT ha expirado.
+     * @param jwt Token JWT a verificar.
+     * @return true si el token ha expirado, false en caso contrario.
+     */
+    public boolean isTokenExpired(String jwt) {
+        return extractAllClaims(jwt).getExpiration().before(new Date());
     }
 }
