@@ -6,9 +6,6 @@ import com.victordev.ferreclickbackend.DTOs.api.product.UpdateProductBody;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-import java.util.List;
-import java.util.Optional;
-
 /**
  * Interfaz del servicio de productos que proporciona métodos para crear, obtener, actualizar y eliminar productos.
  */
@@ -32,7 +29,7 @@ public interface IProductService {
      * @param id Identificador del producto.
      * @return Objeto que contiene la información del producto.
      */
-    Optional<ProductResponse> getProductById(Long id);
+    ProductResponse getProductById(Long id);
 
     /**
      * Actualiza un producto.

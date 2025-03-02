@@ -3,7 +3,6 @@ package com.victordev.ferreclickbackend.persistence.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -53,10 +52,9 @@ public class Product {
     @JsonIgnore
     private List<CartItem> cartItems;
 
-    public Product(String name, String description, Double price, String image) {
+    public Product(String name, String description, Double price) {
         this.name = name;
         this.description = description;
         this.price = price;
-        this.image = image;
     }
 }

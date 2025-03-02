@@ -87,8 +87,8 @@ public class ProductServiceImpl implements IProductService {
      * @return Lista de objetos `ProductResponse` que representan los productos.
      */
     public Page<ProductResponse> getAllProducts(Pageable pageable) {
-        return productRepository.findAll(pageable)
-                .map(dtoConverter::getProduct);
+        Page<ProductResponse> products = productRepository.findAll(pageable).map(dtoConverter::getProduct);
+        return products.isEmpty() ? Page.empty() : products;
     }
 
     /**
@@ -96,8 +96,8 @@ public class ProductServiceImpl implements IProductService {
      * @param id Identificador del producto.
      * @return Objeto `ProductResponse` que representa el producto.
      */
-    public Optional<ProductResponse> getProductById(Long id) {
-        return productRepository.findById(id).map(dtoConverter::getProduct);
+    public ProductResponse getProductById(Long id) {
+        return dtoConverter.getProduct(entityFinderService.getProductById(id));
     }
 
     /**
@@ -106,15 +106,9 @@ public class ProductServiceImpl implements IProductService {
      * @return Lista de objetos `ProductResponse` que representan los productos de la categoría.
      */
     public Page<ProductResponse> getProductsByCategory(Long categoryId, Pageable pageable) {
-
         Page<ProductResponse> products = productRepository.findByCategories_Category_Id(categoryId, pageable)
                 .map(dtoConverter::getProduct);
-
-        if (products.getContent().isEmpty() || products.isEmpty()) {
-            throw new CategoryNotFoundException("Category not found with id: " + categoryId);
-        }
-
-        return products;
+        return products.isEmpty() ? Page.empty() : products;
     }
 
     /**
